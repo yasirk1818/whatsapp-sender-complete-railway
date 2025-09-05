@@ -1,0 +1,361 @@
+/* Custom CSS for WhatsApp Sender Application */
+
+/* Global Styles */
+body {
+    background-color: #f8f9fa;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Header Styles */
+header {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%) !important;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 12px;
+    transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1) !important;
+}
+
+.card-header {
+    border-radius: 12px 12px 0 0 !important;
+    font-weight: 600;
+}
+
+/* Status Indicator Styles */
+.status-indicator .badge {
+    font-size: 0.85em;
+    padding: 0.5em 0.75em;
+    border-radius: 20px;
+}
+
+/* Session Status Styles */
+#session-status {
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+#session-status.status-connecting {
+    background-color: #fff3cd !important;
+    color: #856404 !important;
+    border-color: #ffecb3 !important;
+}
+
+#session-status.status-waiting {
+    background-color: #cff4fc !important;
+    color: #055160 !important;
+    border-color: #b6effb !important;
+}
+
+#session-status.status-ready {
+    background-color: #d1e7dd !important;
+    color: #0a3622 !important;
+    border-color: #badbcc !important;
+}
+
+#session-status.status-error {
+    background-color: #f8d7da !important;
+    color: #721c24 !important;
+    border-color: #f1aeb5 !important;
+}
+
+#session-status.status-disconnected {
+    background-color: #e2e3e5 !important;
+    color: #41464b !important;
+    border-color: #c4c8cc !important;
+}
+
+/* QR Code Styles */
+#qr-code-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    border: 2px dashed #dee2e6;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+#qr-code-container:hover {
+    border-color: #25d366;
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.2);
+}
+
+#qr-code-container img {
+    border-radius: 8px;
+    max-width: 100%;
+    height: auto;
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 8px;
+    border: 2px solid #e9ecef;
+    padding: 0.75rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: #25d366;
+    box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+}
+
+.form-label {
+    color: #495057;
+    margin-bottom: 0.5rem;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-success {
+    background: linear-gradient(135deg, #25d366 0%, #128c7e 100%);
+    border: none;
+}
+
+.btn-success:hover {
+    background: linear-gradient(135deg, #128c7e 0%, #25d366 100%);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(220, 53, 69, 0.3);
+}
+
+.btn-info:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(13, 202, 240, 0.3);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* Activity Log Styles */
+.activity-log {
+    max-height: 300px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    padding: 1rem;
+}
+
+.activity-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #e9ecef;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: flex-start;
+}
+
+.activity-item:last-child {
+    border-bottom: none;
+}
+
+.activity-item .timestamp {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-right: 0.5rem;
+}
+
+.activity-item.success {
+    color: #155724;
+    background-color: #d4edda;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.activity-item.error {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.activity-item.info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+.activity-item.warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-radius: 4px;
+    padding: 0.5rem;
+    margin: 0.25rem 0;
+}
+
+/* File Preview Styles */
+#file-preview .alert {
+    border-radius: 8px;
+    font-size: 0.9rem;
+}
+
+#file-preview .btn-close {
+    font-size: 0.75rem;
+}
+
+/* Character Counter */
+#char-count {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Loading Animations */
+.fa-spin {
+    animation: fa-spin 1s infinite linear;
+}
+
+.loading-pulse {
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding: 0.5rem;
+    }
+    
+    header .d-flex {
+        flex-direction: column;
+        align-items: flex-start !important;
+    }
+    
+    header .badge {
+        margin: 0.5rem 0 !important;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    #qr-code-container {
+        padding: 15px;
+    }
+    
+    .btn {
+        padding: 0.6rem 1.2rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .h3 {
+        font-size: 1.5rem;
+    }
+    
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    .activity-log {
+        max-height: 200px;
+    }
+    
+    .form-control {
+        padding: 0.6rem;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #212529;
+        color: #f8f9fa;
+    }
+    
+    .card {
+        background-color: #343a40;
+        color: #f8f9fa;
+    }
+    
+    .form-control {
+        background-color: #495057;
+        border-color: #6c757d;
+        color: #f8f9fa;
+    }
+    
+    .form-control:focus {
+        background-color: #495057;
+        color: #f8f9fa;
+    }
+    
+    .activity-log {
+        background-color: #495057;
+    }
+}
+
+/* Accessibility Improvements */
+.btn:focus,
+.form-control:focus {
+    outline: 2px solid #25d366;
+    outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+    .btn,
+    .form-control,
+    .card {
+        border: 2px solid;
+    }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Print Styles */
+@media print {
+    .btn,
+    .toast-container,
+    .modal {
+        display: none !important;
+    }
+    
+    .card {
+        border: 1px solid #000 !important;
+        break-inside: avoid;
+    }
+}

@@ -1,0 +1,221 @@
+[
+  {
+    "id": "f8a26da2-daa0-4780-850f-41e1e29a7e39",
+    "userId": "user_1756797003727_k8f4s0",
+    "name": "Campaign 1756798224861",
+    "message": "hggggggg",
+    "recipients": [
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710"
+      }
+    ],
+    "attachment": null,
+    "options": {
+      "delay": "2000",
+      "rotationStrategy": "round-robin",
+      "selectedDevices": [
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51"
+      ],
+      "messagesPerDevice": 10,
+      "customMinDelay": 5,
+      "customMaxDelay": 20,
+      "enableTypingSimulation": true
+    },
+    "status": "completed",
+    "progress": {
+      "total": 1,
+      "sent": 1,
+      "failed": 0,
+      "currentIndex": 1
+    },
+    "rotationState": {
+      "strategy": "round-robin",
+      "deviceIndex": 1,
+      "deviceUsage": {
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51": 1
+      },
+      "deviceLastUsed": {
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51": 1756798230300
+      },
+      "currentDeviceMessageCount": 0,
+      "currentDevice": null
+    },
+    "createdAt": "2025-09-02T07:30:24.883Z",
+    "updatedAt": "2025-09-02T07:30:30.301Z",
+    "lastProcessedAt": "2025-09-02T07:30:30.300Z"
+  },
+  {
+    "id": "e8b8e41e-131f-40ed-9fa4-33f8c3ea9fc5",
+    "userId": "user_1756797003727_k8f4s0",
+    "name": "Campaign 1756798499611",
+    "message": "hgjhg",
+    "recipients": [
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710"
+      }
+    ],
+    "attachment": null,
+    "options": {
+      "delay": "2000",
+      "rotationStrategy": "round-robin",
+      "selectedDevices": [
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51"
+      ],
+      "messagesPerDevice": 10,
+      "customMinDelay": 5,
+      "customMaxDelay": 20,
+      "enableTypingSimulation": true
+    },
+    "status": "completed",
+    "progress": {
+      "total": 1,
+      "sent": 1,
+      "failed": 0,
+      "currentIndex": 1
+    },
+    "rotationState": {
+      "strategy": "round-robin",
+      "deviceIndex": 1,
+      "deviceUsage": {
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51": 1
+      },
+      "deviceLastUsed": {
+        "ca2e35ca-c3d1-41d7-9602-595b2b153f51": 1756798503400
+      },
+      "currentDeviceMessageCount": 0,
+      "currentDevice": null
+    },
+    "createdAt": "2025-09-02T07:34:59.631Z",
+    "updatedAt": "2025-09-02T07:35:03.400Z",
+    "lastProcessedAt": "2025-09-02T07:35:03.400Z"
+  },
+  {
+    "id": "45e4bcd2-15c1-4b30-b5be-277e255adbfa",
+    "userId": "user_1756797003727_k8f4s0",
+    "name": "Campaign 1756799029926",
+    "message": "gfh",
+    "recipients": [
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710"
+      }
+    ],
+    "attachment": null,
+    "options": {
+      "delay": "2000",
+      "rotationStrategy": "round-robin",
+      "selectedDevices": [
+        "82721a5d-61b4-433c-8b72-5ae320fba566"
+      ],
+      "messagesPerDevice": 10,
+      "customMinDelay": 5,
+      "customMaxDelay": 20,
+      "enableTypingSimulation": true
+    },
+    "status": "completed",
+    "progress": {
+      "total": 1,
+      "sent": 1,
+      "failed": 0,
+      "currentIndex": 1
+    },
+    "rotationState": {
+      "strategy": "round-robin",
+      "deviceIndex": 1,
+      "deviceUsage": {
+        "82721a5d-61b4-433c-8b72-5ae320fba566": 1
+      },
+      "deviceLastUsed": {
+        "82721a5d-61b4-433c-8b72-5ae320fba566": 1756799034153
+      },
+      "currentDeviceMessageCount": 0,
+      "currentDevice": null
+    },
+    "createdAt": "2025-09-02T07:43:49.971Z",
+    "updatedAt": "2025-09-02T07:43:54.155Z",
+    "lastProcessedAt": "2025-09-02T07:43:54.154Z"
+  },
+  {
+    "id": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+    "userId": "user_1756835632394_g15h60",
+    "name": "Campaign 1756835929270",
+    "message": "lkj",
+    "recipients": [
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      }
+    ],
+    "attachment": null,
+    "options": {
+      "delay": "2000",
+      "rotationStrategy": "manual",
+      "selectedDevices": [
+        "50e1cdef-0d21-472e-8e55-d87b8e53d132",
+        "4c2000b8-3328-4955-9bac-32f968f8edb6"
+      ],
+      "messagesPerDevice": 10,
+      "customMinDelay": 5,
+      "customMaxDelay": 20,
+      "enableTypingSimulation": true
+    },
+    "status": "completed",
+    "progress": {
+      "total": 6,
+      "sent": 6,
+      "failed": 0,
+      "currentIndex": 6
+    },
+    "rotationState": {
+      "strategy": "manual",
+      "deviceIndex": 6,
+      "deviceUsage": {
+        "50e1cdef-0d21-472e-8e55-d87b8e53d132": 0,
+        "4c2000b8-3328-4955-9bac-32f968f8edb6": 1
+      },
+      "deviceLastUsed": {
+        "50e1cdef-0d21-472e-8e55-d87b8e53d132": 0,
+        "4c2000b8-3328-4955-9bac-32f968f8edb6": 1756835959538
+      },
+      "currentDeviceMessageCount": 0,
+      "currentDevice": null
+    },
+    "createdAt": "2025-09-02T17:58:49.286Z",
+    "updatedAt": "2025-09-02T17:59:19.543Z",
+    "lastProcessedAt": "2025-09-02T17:59:19.542Z"
+  }
+]

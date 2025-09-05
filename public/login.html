@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - WhatsApp Sender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .login-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            max-width: 400px;
+            width: 100%;
+        }
+        
+        .login-header {
+            background: #25D366;
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .login-header i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+        
+        .login-body {
+            padding: 2rem;
+        }
+        
+        .form-control {
+            border-radius: 10px;
+            border: 2px solid #f0f0f0;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+        
+        .form-control:focus {
+            border-color: #25D366;
+            box-shadow: 0 0 0 0.2rem rgba(37, 211, 102, 0.25);
+        }
+        
+        .btn-login {
+            background: #25D366;
+            border: none;
+            border-radius: 10px;
+            padding: 0.75rem;
+            width: 100%;
+            color: white;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-login:hover {
+            background: #128C7E;
+            transform: translateY(-2px);
+        }
+        
+        .divider {
+            text-align: center;
+            margin: 1.5rem 0;
+            position: relative;
+        }
+        
+        .divider::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: #ddd;
+        }
+        
+        .divider span {
+            background: white;
+            padding: 0 1rem;
+            color: #666;
+        }
+        
+        .register-link {
+            text-align: center;
+            margin-top: 1rem;
+        }
+        
+        .register-link a {
+            color: #25D366;
+            text-decoration: none;
+            font-weight: 600;
+        }
+        
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .alert-warning {
+            background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+            color: #856404;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .alert-info {
+            background: linear-gradient(135deg, #d1ecf1 0%, #74b9ff 100%);
+            color: #0c5460;
+            border-left: 4px solid #17a2b8;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, #f8d7da 0%, #fab1a0 100%);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .loading {
+            display: none;
+        }
+        
+        .loading.show {
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-header">
+            <i class="fab fa-whatsapp"></i>
+            <h3>WhatsApp Sender</h3>
+            <p class="mb-0">Sign in to your account</p>
+        </div>
+        
+        <div class="login-body">
+            <div id="alert-container"></div>
+            
+            <form id="loginForm">
+                <div class="mb-3">
+                    <label for="username" class="form-label">
+                        <i class="fas fa-user"></i> Username or Email
+                    </label>
+                    <input type="text" class="form-control" id="username" name="username" required 
+                           placeholder="Enter your username or email">
+                </div>
+                
+                <div class="mb-3">
+                    <label for="password" class="form-label">
+                        <i class="fas fa-lock"></i> Password
+                    </label>
+                    <input type="password" class="form-control" id="password" name="password" required 
+                           placeholder="Enter your password">
+                </div>
+                
+                <button type="submit" class="btn btn-login">
+                    <span class="loading">
+                        <i class="fas fa-spinner fa-spin"></i> Signing in...
+                    </span>
+                    <span class="btn-text">
+                        <i class="fas fa-sign-in-alt"></i> Sign In
+                    </span>
+                </button>
+            </form>
+            
+            <div class="divider">
+                <span>Don't have an account?</span>
+            </div>
+            
+            <div class="register-link">
+                <a href="#" id="registerLink" onclick="checkRegistrationStatus()">
+                    <i class="fas fa-user-plus"></i> Create Account
+                </a>
+                <div id="registrationStatus" class="mt-2" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Firebase system completely removed - using local authentication only
+        const isFirebaseAvailable = false;
+
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const submitBtn = this.querySelector('button[type="submit"]');
+            const loading = submitBtn.querySelector('.loading');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const alertContainer = document.getElementById('alert-container');
+            
+            // Show loading state
+            loading.classList.add('show');
+            btnText.style.display = 'none';
+            submitBtn.disabled = true;
+            
+            // Clear previous alerts
+            alertContainer.innerHTML = '';
+            
+            try {
+                const formData = new FormData(this);
+                const username = formData.get('username');
+                const password = formData.get('password');
+                
+                let result;
+                
+                // Try Firebase authentication first
+                if (isFirebaseAvailable) {
+                    try {
+                        // Try to sign in with email (if username looks like email)
+                        const email = username.includes('@') ? username : username + '@whatsapp-sender.local';
+                        const userCredential = await firebase.auth().signInWithEmailAndPassword(email, password);
+                        const user = userCredential.user;
+                        
+                        // Get ID token
+                        const idToken = await user.getIdToken();
+                        
+                        // Send token to server for verification
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username: idToken })
+                        });
+                        
+                        result = await response.json();
+                        
+                        if (result.success) {
+                            console.log('✅ Firebase authentication successful');
+                        }
+                    } catch (firebaseError) {
+                        console.log('⚠️  Firebase auth failed, trying local auth:', firebaseError.message);
+                        // Fall back to local authentication
+                        const response = await fetch('/api/auth/login', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ username, password })
+                        });
+                        result = await response.json();
+                    }
+                } else {
+                    // Local authentication only
+                    const response = await fetch('/api/auth/login', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ username, password })
+                    });
+                    result = await response.json();
+                }
+                
+                if (result.success) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> ${result.message || 'Login successful!'}
+                        </div>
+                    `;
+                    
+                    // Redirect based on user role
+                    setTimeout(() => {
+                        if (result.user.role === 'admin') {
+                            window.location.href = '/admin';
+                        } else {
+                            window.location.href = '/';
+                        }
+                    }, 1500);
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> Network error. Please try again.
+                    </div>
+                `;
+            } finally {
+                // Hide loading state
+                loading.classList.remove('show');
+                btnText.style.display = 'inline';
+                submitBtn.disabled = false;
+            }
+        });
+        
+        // Check if already logged in
+        fetch('/api/auth/me')
+            .then(response => response.json())
+            .then(result => {
+                if (result.success) {
+                    if (result.user.role === 'admin') {
+                        window.location.href = '/admin';
+                    } else {
+                        window.location.href = '/';
+                    }
+                }
+            })
+            .catch(() => {
+                // User not logged in, stay on login page
+            });
+            
+        // Check registration status and show immediate feedback
+        async function checkRegistrationStatus() {
+            const statusDiv = document.getElementById('registrationStatus');
+            const registerLink = document.getElementById('registerLink');
+            
+            // Show loading state
+            statusDiv.innerHTML = `
+                <div class="alert alert-info">
+                    <i class="fas fa-spinner fa-spin"></i> Checking registration status...
+                </div>
+            `;
+            statusDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/api/auth/registration-status');
+                const result = await response.json();
+                
+                if (result.success && result.registrationEnabled) {
+                    // Registration is enabled, redirect to register page
+                    window.location.href = '/register';
+                } else {
+                    // Registration is disabled, show error message immediately
+                    const title = result.disabledTitle || 'Registration Currently Disabled';
+                    const message = result.disabledMessage || 'New user registration is temporarily disabled by the administrator. Please contact the administrator for access.';
+                    
+                    statusDiv.innerHTML = `
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <strong>${title}</strong><br>
+                            ${message}
+                            <hr>
+                            <div class="text-center">
+                                <a href="https://wa.me/12698832370" target="_blank" class="btn btn-success btn-sm">
+                                    <i class="fab fa-whatsapp"></i> Contact Admin: +1 (269) 883-2370
+                                </a>
+                            </div>
+                        </div>
+                    `;
+                    
+                    // Disable the register link temporarily
+                    registerLink.style.opacity = '0.6';
+                    registerLink.style.pointerEvents = 'none';
+                    
+                    // Re-enable the link after 5 seconds
+                    setTimeout(() => {
+                        registerLink.style.opacity = '1';
+                        registerLink.style.pointerEvents = 'auto';
+                        statusDiv.style.display = 'none';
+                    }, 8000);
+                }
+            } catch (error) {
+                // If can't check status, show error and allow to try
+                statusDiv.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i>
+                        Unable to check registration status. You can try to register.
+                    </div>
+                `;
+                
+                setTimeout(() => {
+                    window.location.href = '/register';
+                }, 2000);
+            }
+        }
+    </script>
+
+</body>
+</html>

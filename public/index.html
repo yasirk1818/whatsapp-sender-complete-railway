@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Sender Pro - Multi-Device & Bulk Messaging Platform</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: none;"> <!-- Hide body until authentication check -->
+    <!-- Loading Screen -->
+    <div id="auth-loading" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: linear-gradient(135deg, #25D366 0%, #128C7E 100%); z-index: 9999; display: flex; align-items: center; justify-content: center; color: white;">
+        <div style="text-align: center;">
+            <div style="border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid white; width: 50px; height: 50px; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+            <h4>Loading...</h4>
+            <p>Checking authentication</p>
+        </div>
+    </div>
+    <style>
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <!-- Authentication Check Script -->
+    <script>
+        // Check authentication before showing content
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // Authentication successful, hide loading and show the page
+                document.getElementById('auth-loading').style.display = 'none';
+                document.body.style.display = 'block';
+                
+                // Update user display name
+                const userDisplayName = document.getElementById('user-display-name');
+                if (userDisplayName) {
+                    userDisplayName.textContent = result.user.fullName || result.user.username;
+                }
+                
+                // Add logout functionality
+                addLogoutButton();
+                
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        });
+        
+        function addLogoutButton() {
+            const headerDiv = document.querySelector('header .d-flex.align-items-center');
+            if (headerDiv) {
+                const logoutBtn = document.createElement('button');
+                logoutBtn.className = 'btn btn-outline-light btn-sm ms-3';
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt me-1"></i>Logout';
+                logoutBtn.onclick = async function() {
+                    try {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        window.location.href = '/login';
+                    }
+                };
+                headerDiv.appendChild(logoutBtn);
+            }
+        }
+    </script>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-success text-white py-3 mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h1 class="h3 mb-0 me-4">
+                            <i class="fab fa-whatsapp me-2"></i>
+                            WhatsApp Sender Pro
+                        </h1>
+                        <nav class="navbar-nav">
+                            <div class="nav nav-pills">
+                                <a class="nav-link active bg-white text-success" href="/dashboard">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="devices.html">
+                                    <i class="fas fa-mobile-alt me-1"></i>Devices
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="history.html">
+                                    <i class="fas fa-history me-1"></i>History
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="profile.html">
+                                    <i class="fas fa-user me-1"></i>Profile
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="text-white me-3">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="user-display-name">Loading...</span>
+                        </span>
+                        <span class="badge bg-info text-white me-3">
+                            Devices: <span id="device-count">0</span>
+                        </span>
+                        <div class="status-indicator" id="connection-status">
+                            <span class="badge bg-warning">
+                                <i class="fas fa-circle-notch fa-spin me-1"></i>
+                                Connecting...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- Sidebar - Device Management -->
+            <div class="col-lg-4 col-md-5">
+                <!-- Device Management Card -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-mobile-alt me-2"></i>
+                            Device Management
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- User Info -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your User ID:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="user-id-input" readonly>
+                                <button class="btn btn-outline-secondary" type="button" id="copy-user-id-btn" title="Copy User ID">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                            <small class="form-text text-muted">
+                                This unique ID manages all your WhatsApp devices
+                            </small>
+                        </div>
+
+                        <!-- Device Statistics -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Device Statistics:</label>
+                            <div class="row text-center">
+                                <div class="col-4">
+                                    <div class="bg-success text-white p-2 rounded">
+                                        <div class="h5 mb-0" id="ready-devices">0</div>
+                                        <small>Ready</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="bg-warning text-white p-2 rounded">
+                                        <div class="h5 mb-0" id="connecting-devices">0</div>
+                                        <small>Connecting</small>
+                                    </div>
+                                </div>
+                                <div class="col-4">
+                                    <div class="bg-info text-white p-2 rounded">
+                                        <div class="h5 mb-0" id="total-devices">0</div>
+                                        <small>Total</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device List -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Your Devices:</label>
+                            <div id="devices-list" class="devices-container">
+                                <div class="text-muted text-center p-3">
+                                    <i class="fas fa-mobile-alt fa-2x mb-2"></i>
+                                    <p>No devices connected yet.<br>Go to <a href="devices.html" class="text-decoration-none"><strong>Devices</strong></a> page to add WhatsApp devices.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Actions -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-info" id="refresh-devices-btn">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Refresh Devices
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Device Selection & Rotation -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-mobile-alt me-2"></i>
+                            Device Selection & Rotation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Device Selection Strategy -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rotation Strategy:</label>
+                            <select class="form-select" id="rotation-strategy-sidebar">
+                                <option value="round-robin">Round Robin (Default)</option>
+                                <option value="random">Random Selection</option>
+                                <option value="load-balanced">Load Balanced</option>
+                                <option value="custom-count">Custom Message Count</option>
+                                <option value="manual">Manual Selection</option>
+                            </select>
+                            <div class="form-text">Choose how messages are distributed across devices</div>
+                        </div>
+
+                        <!-- Custom Message Count Settings (hidden by default) -->
+                        <div class="mb-3" id="custom-count-settings-sidebar" style="display: none;">
+                            <label for="messages-per-device-sidebar" class="form-label fw-bold">
+                                <i class="fas fa-counter me-1"></i>
+                                Messages per Device:
+                            </label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="messages-per-device-sidebar" 
+                                       min="1" max="100" value="10" placeholder="10">
+                                <span class="input-group-text">messages</span>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Device will switch after sending this many messages
+                            </div>
+                        </div>
+
+                        <!-- Manual Device Selection (hidden by default) -->
+                        <div class="mb-3" id="manual-device-selection-sidebar" style="display: none;">
+                            <label class="form-label fw-bold">Select Devices:</label>
+                            <div id="device-checkboxes-sidebar">
+                                <div class="text-muted">No devices available</div>
+                            </div>
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="debug-manual-selection-btn">
+                                    <i class="fas fa-bug me-1"></i>Debug Selection
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Device Statistics -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Device Status:</label>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="bg-success text-white p-2 rounded mb-2">
+                                        <div class="h6 mb-0" id="selected-devices-count-sidebar">0</div>
+                                        <small>Selected</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-info text-white p-2 rounded mb-2">
+                                        <div class="h6 mb-0" id="total-ready-devices-sidebar">0</div>
+                                        <small>Available</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message Rate Settings -->
+                        <div class="mb-3">
+                            <label for="message-delay-sidebar" class="form-label fw-bold">
+                                <i class="fas fa-clock me-1"></i>
+                                Message Delay:
+                            </label>
+                            <select class="form-select" id="message-delay-sidebar">
+                                <option value="1000">1 second (Fast - Risk)</option>
+                                <option value="2000" selected>2 seconds (Normal)</option>
+                                <option value="3000">3 seconds (Safe)</option>
+                                <option value="5000">5 seconds (Very Safe)</option>
+                                <option value="10000">10 seconds (Ultra Safe)</option>
+                                <option value="random-fast">Random 2-5 seconds (Natural Fast)</option>
+                                <option value="random-normal">Random 5-10 seconds (Natural Normal)</option>
+                                <option value="random-safe">Random 10-20 seconds (Natural Safe)</option>
+                                <option value="custom">Custom...</option>
+                            </select>
+                            <div id="custom-delay-sidebar" style="display: none;" class="mt-2">
+                                <div class="row">
+                                    <div class="col-6">
+                                        <label class="form-label">Min Delay (seconds):</label>
+                                        <input type="number" class="form-control" id="custom-min-delay-sidebar" 
+                                               placeholder="Min" min="1" max="300" value="5">
+                                    </div>
+                                    <div class="col-6">
+                                        <label class="form-label">Max Delay (seconds):</label>
+                                        <input type="number" class="form-control" id="custom-max-delay-sidebar" 
+                                               placeholder="Max" min="2" max="300" value="20">
+                                    </div>
+                                </div>
+                                <div class="form-text mt-1">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    Random delay will be between min and max seconds
+                                </div>
+                            </div>
+                            <div class="form-text">
+                                <i class="fas fa-shield-alt me-1 text-success"></i>
+                                Random delays make messaging look more natural and reduce spam detection
+                                <br>
+                                <small class="text-muted">
+                                    <i class="fas fa-save me-1"></i>
+                                    Settings are automatically saved and restored
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Usage Statistics -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Usage Statistics:</label>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="bg-success text-white p-2 rounded">
+                                        <div class="h6 mb-0" id="total-messages-sent-sidebar">0</div>
+                                        <small>Messages Sent</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-info text-white p-2 rounded">
+                                        <div class="h6 mb-0" id="active-campaigns-sidebar">0</div>
+                                        <small>Active Campaigns</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Actions -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-warning text-dark" onclick="document.getElementById('bulk-message-tab').click()">
+                                <i class="fas fa-cog me-2"></i>
+                                Go to Bulk SMS
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Legacy Session Management (Hidden by default) -->
+                <div class="card shadow-sm mb-4" id="legacy-session-card" style="display: none;">
+                    <div class="card-header bg-secondary text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Legacy Session Mode
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- Session Info -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Session ID:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="session-id-input" readonly>
+                                <button class="btn btn-outline-secondary" type="button" id="copy-session-btn" title="Copy Session ID">
+                                    <i class="fas fa-copy"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Connection Status -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Connection Status:</label>
+                            <div id="session-status" class="alert alert-info">
+                                <i class="fas fa-spinner fa-spin me-2"></i>
+                                Initializing session...
+                            </div>
+                        </div>
+
+                        <!-- QR Code Section -->
+                        <div id="qr-section" class="mb-3" style="display: none;">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-qrcode me-2"></i>
+                                WhatsApp QR Code:
+                            </label>
+                            <div class="text-center">
+                                <div id="qr-code-container" class="mb-3">
+                                    <!-- QR code will be inserted here -->
+                                </div>
+                                <p class="text-muted small">
+                                    <i class="fas fa-mobile-alt me-1"></i>
+                                    Scan this QR code with your WhatsApp mobile app
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Session Actions -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-danger" id="delete-session-btn" disabled>
+                                <i class="fas fa-trash me-2"></i>
+                                Delete Session
+                            </button>
+                            <button class="btn btn-info" id="refresh-session-btn">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Refresh Status
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Content -->
+            <div class="col-lg-8 col-md-7">
+                <!-- Navigation Tabs -->
+                <ul class="nav nav-tabs mb-4" id="messagingTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="single-message-tab" data-bs-toggle="tab" data-bs-target="#single-message" type="button" role="tab">
+                            <i class="fas fa-comment me-2"></i>Single Message
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="bulk-message-tab" data-bs-toggle="tab" data-bs-target="#bulk-message" type="button" role="tab">
+                            <i class="fas fa-broadcast-tower me-2"></i>Bulk Messaging
+                        </button>
+                    </li>
+                </ul>
+
+                <!-- Tab Content -->
+                <div class="tab-content" id="messagingTabsContent">
+                    <!-- Single Message Tab -->
+                    <div class="tab-pane fade show active" id="single-message" role="tabpanel">
+                        <div class="card shadow-sm mb-4">
+                            <div class="card-header bg-success text-white">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Send Single Message
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <!-- Device Selection -->
+                                <div class="mb-3">
+                                    <label for="device-select" class="form-label fw-bold">
+                                        <i class="fas fa-mobile-alt me-2"></i>
+                                        Select Device:
+                                    </label>
+                                    <select class="form-select" id="device-select" required>
+                                        <option value="">No devices available</option>
+                                    </select>
+                                    <div class="form-text">
+                                        Choose which WhatsApp device to send from
+                                    </div>
+                                </div>
+
+                                <form id="message-form">
+                                    <!-- Recipient Information -->
+                                    <div class="mb-3">
+                                        <label for="phone-number" class="form-label fw-bold">
+                                            <i class="fas fa-phone me-2"></i>
+                                            Phone Number:
+                                        </label>
+                                        <input type="tel" 
+                                               class="form-control" 
+                                               id="phone-number" 
+                                               placeholder="Enter phone number with country code (e.g., +1234567890)" 
+                                               required>
+                                        <div class="form-text">
+                                            Include country code without spaces or special characters
+                                        </div>
+                                    </div>
+
+                                    <!-- Recipient Name -->  
+                                    <div class="mb-3">
+                                        <label for="recipient-name" class="form-label fw-bold">
+                                            <i class="fas fa-user me-2"></i>
+                                            Recipient Name (Optional):
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="recipient-name" 
+                                               placeholder="Enter recipient's name">
+                                        <div class="form-text">
+                                            Used for {name} variable in message
+                                        </div>
+                                    </div>
+
+                                    <!-- City -->  
+                                    <div class="mb-3">
+                                        <label for="recipient-city" class="form-label fw-bold">
+                                            <i class="fas fa-map-marker-alt me-2"></i>
+                                            City (Optional):
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="recipient-city" 
+                                               placeholder="Enter recipient's city">
+                                        <div class="form-text">
+                                            Used for {city} variable in message
+                                        </div>
+                                    </div>
+
+                                    <!-- Order ID -->  
+                                    <div class="mb-3">
+                                        <label for="recipient-order" class="form-label fw-bold">
+                                            <i class="fas fa-shopping-cart me-2"></i>
+                                            Order ID (Optional):
+                                        </label>
+                                        <input type="text" 
+                                               class="form-control" 
+                                               id="recipient-order" 
+                                               placeholder="Enter order ID">
+                                        <div class="form-text">
+                                            Used for {order} variable in message
+                                        </div>
+                                    </div>
+
+                                    <!-- Message Input -->
+                                    <div class="mb-3">
+                                        <label for="message-text" class="form-label fw-bold">
+                                            <i class="fas fa-comment me-2"></i>
+                                            Message:
+                                        </label>
+                                        <textarea class="form-control" 
+                                                  id="message-text" 
+                                                  rows="4" 
+                                                  placeholder="Type your message here...&#10;&#10;Available variables: {name}, {city}, {order}, {mobile}&#10;Example: Hello {name} from {city}, your order {order} is ready! Contact: {mobile}" 
+                                                  required></textarea>
+                                        <div class="form-text">
+                                            Available variables: <code>{name}</code>, <code>{city}</code>, <code>{order}</code>, <code>{mobile}</code><br>
+                                            Character count: <span id="char-count">0</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- File Attachment -->
+                                    <div class="mb-3">
+                                        <label for="attachment" class="form-label fw-bold">
+                                            <i class="fas fa-paperclip me-2"></i>
+                                            Attachment (Optional):
+                                        </label>
+                                        <input type="file" 
+                                               class="form-control" 
+                                               id="attachment" 
+                                               accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.mp3,.mp4,.avi,.mov">
+                                        <div class="form-text">
+                                            Supported: Images, Documents, Audio, Video (Max: 10MB)
+                                        </div>
+                                        <div id="file-preview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-info d-flex align-items-center">
+                                                <i class="fas fa-file me-2"></i>
+                                                <span id="file-name"></span>
+                                                <button type="button" class="btn-close ms-auto" id="remove-file" aria-label="Remove file"></button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Send Button -->
+                                    <div class="d-grid">
+                                        <button type="submit" class="btn btn-success btn-lg" id="send-btn" disabled>
+                                            <i class="fas fa-paper-plane me-2"></i>
+                                            Send Message
+                                        </button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bulk Message Tab -->
+                    <div class="tab-pane fade" id="bulk-message" role="tabpanel">
+                        <!-- Bulk Message Campaign -->
+                        <div class="card shadow-sm">
+                            <div class="card-header bg-warning text-dark">
+                                <h5 class="mb-0">
+                                    <i class="fas fa-broadcast-tower me-2"></i>
+                                    Bulk Message Campaign
+                                </h5>
+                            </div>
+                            <div class="card-body">
+                                <form id="bulk-sms-form">
+                                            <!-- Input Method Selection -->
+                                            <div class="mb-3">
+                                                <label class="form-label fw-bold">
+                                                    <i class="fas fa-users me-2"></i>
+                                                    Recipients Input Method:
+                                                </label>
+                                                <div class="nav nav-pills" id="input-method-tabs" role="tablist">
+                                                    <button class="nav-link active" id="manual-input-tab" data-bs-toggle="pill" 
+                                                            data-bs-target="#manual-input" type="button" role="tab">
+                                                        <i class="fas fa-keyboard me-1"></i> Manual Input
+                                                    </button>
+                                                    <button class="nav-link" id="csv-upload-tab" data-bs-toggle="pill" 
+                                                            data-bs-target="#csv-upload" type="button" role="tab">
+                                                        <i class="fas fa-file-csv me-1"></i> CSV Upload
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Tab Content -->
+                                            <div class="tab-content mb-3">
+                                                <!-- Manual Input Tab -->
+                                                <div class="tab-pane fade show active" id="manual-input" role="tabpanel">
+                                                    <div class="mb-3">
+                                                        <label for="manual-numbers-input" class="form-label fw-bold">
+                                                            <i class="fas fa-phone me-2"></i>
+                                                            Enter Phone Numbers:
+                                                        </label>
+                                                        <textarea class="form-control" id="manual-numbers-input" rows="6" 
+                                                                  placeholder="Enter contact details (one per line):&#10;&#10;+1234567890,John Doe,New York,ORD001&#10;+9876543210,Jane Smith,London,ORD002&#10;+1122334455,Mike Johnson,Paris,ORD003&#10;&#10;Format: +PhoneNumber,Name,City,Order&#10;Example: +923001234567,Ali Ahmed,Karachi,ORD123&#10;Minimum required: +923001234567,Name"></textarea>
+                                                        <div class="form-text">
+                                                            <strong>Format:</strong> +PhoneNumber,Name,City,Order (City and Order are optional)<br>
+                                                            Example: <code>+923001234567,Ali Ahmed,Karachi,ORD123</code><br>
+                                                            Minimum: <code>+923001234567,Ali Ahmed</code><br>
+                                                            Parsed contacts: <span id="manual-count" class="fw-bold text-success">0</span>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="row">
+                                                        <div class="col-md-6">
+                                                            <button type="button" class="btn btn-outline-primary w-100" id="parse-manual-numbers">
+                                                                <i class="fas fa-sync-alt me-1"></i> Parse Numbers
+                                                            </button>
+                                                        </div>
+                                                        <div class="col-md-6">
+                                                            <button type="button" class="btn btn-outline-secondary w-100" id="clear-manual-numbers">
+                                                                <i class="fas fa-trash me-1"></i> Clear All
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div id="manual-preview" class="mt-3" style="display: none;">
+                                                        <div class="alert alert-success">
+                                                            <strong>Parsed:</strong> <span id="manual-parsed-count">0</span> valid numbers found
+                                                            <button type="button" class="btn btn-sm btn-outline-success ms-2" id="preview-manual-numbers">
+                                                                <i class="fas fa-eye"></i> Preview List
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- CSV Upload Tab -->
+                                                <div class="tab-pane fade" id="csv-upload" role="tabpanel">
+                                                    <div class="mb-3">
+                                                        <label for="csv-file" class="form-label fw-bold">
+                                                            <i class="fas fa-file-csv me-2"></i>
+                                                            Recipients CSV File:
+                                                        </label>
+                                                        <input type="file" class="form-control" id="csv-file" accept=".csv">
+                                                        <div class="form-text">
+                                                            CSV with columns: <strong>phone</strong>, <strong>name</strong>, <strong>city</strong>, <strong>order</strong> (only phone and name are required)
+                                                            <a href="#" id="download-csv-template" class="ms-2">
+                                                                <i class="fas fa-download"></i> Download Template
+                                                            </a>
+                                                        </div>
+                                                        <div id="csv-preview" class="mt-2" style="display: none;">
+                                                            <div class="alert alert-info">
+                                                                <strong>Preview:</strong> <span id="csv-count">0</span> recipients loaded
+                                                                <button type="button" class="btn btn-sm btn-outline-info ms-2" id="preview-recipients">
+                                                                    <i class="fas fa-eye"></i> Preview List
+                                                                </button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            <!-- Combined Recipients Preview -->
+                                            <div id="recipients-summary" class="mb-3" style="display: none;">
+                                                <div class="alert alert-primary">
+                                                    <i class="fas fa-users me-2"></i>
+                                                    <strong>Total Recipients:</strong> <span id="total-recipients-count">0</span>
+                                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="preview-all-recipients">
+                                                        <i class="fas fa-eye"></i> Preview All
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" id="clear-all-recipients">
+                                                        <i class="fas fa-trash"></i> Clear All Recipients
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <!-- Message Template -->
+                                            <div class="mb-3">
+                                                <label for="message-template" class="form-label fw-bold">
+                                                    <i class="fas fa-comment me-2"></i>
+                                                    Message Template:
+                                                </label>
+                                                <textarea class="form-control" id="message-template" rows="4" required 
+                                                          placeholder="Enter your message template here...&#10;&#10;Available variables: {name}, {city}, {order}, {mobile}&#10;Example: Hello {name} from {city}, your order {order} is ready! Contact: {mobile}"></textarea>
+                                                <div class="form-text">
+                                                    Available variables: <code>{name}</code>, <code>{city}</code>, <code>{order}</code>, <code>{mobile}</code><br>
+                                                    Character count: <span id="char-count-bulk" class="fw-bold">0</span>
+                                                </div>
+                                            </div>
+
+                                            <!-- Attachment -->
+                                            <div class="mb-3">
+                                                <label for="bulk-attachment" class="form-label fw-bold">
+                                                    <i class="fas fa-paperclip me-2"></i>
+                                                    Attachment (Optional):
+                                                </label>
+                                                <input type="file" class="form-control" id="bulk-attachment" 
+                                                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.mp3,.mp4,.avi,.mov">
+                                                <div class="form-text">Max 10MB. Supported: Images, Documents, Audio, Video</div>
+                                                <div id="attachment-preview" class="mt-2" style="display: none;">
+                                                    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                                                        <span><i class="fas fa-file me-2"></i><span id="attachment-name"></span></span>
+                                                        <button type="button" class="btn-close" id="remove-attachment"></button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Campaign Settings -->
+                                            <div class="row mb-3">
+                                                <div class="col-md-4">
+                                                    <label for="campaign-name" class="form-label fw-bold">
+                                                        <i class="fas fa-tag me-1"></i>
+                                                        Campaign Name:
+                                                    </label>
+                                                    <input type="text" class="form-control" id="campaign-name" 
+                                                           placeholder="Enter campaign name">
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">
+                                                        <i class="fas fa-keyboard me-1"></i>
+                                                        Human-Like Typing:
+                                                    </label>
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="typing-simulation" checked>
+                                                        <label class="form-check-label" for="typing-simulation">
+                                                            Show "Typing..." status
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <label class="form-label fw-bold">
+                                                        <i class="fas fa-shield-alt me-1"></i>
+                                                        Safety Mode:
+                                                    </label>
+                                                    <div class="form-check form-switch">
+                                                        <input class="form-check-input" type="checkbox" id="safety-mode" checked>
+                                                        <label class="form-check-label" for="safety-mode">
+                                                            Enable anti-spam protection
+                                                        </label>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Send Button -->
+                                            <div class="d-grid">
+                                                <button type="submit" class="btn btn-warning btn-lg text-dark fw-bold" 
+                                                        id="start-campaign-btn" disabled>
+                                                    <i class="fas fa-rocket me-2"></i>
+                                                    Start Bulk SMS Campaign
+                                                </button>
+                                            </div>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Campaign Progress -->
+                        <div class="card shadow-sm mt-4" id="campaign-progress" style="display: none;">
+                            <div class="card-header bg-info text-white d-flex justify-content-between">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-chart-line me-2"></i>
+                                    Campaign Progress: <span id="campaign-name-display"></span>
+                                </h6>
+                                <div>
+                                    <button class="btn btn-sm btn-warning me-2" id="restart-campaign-btn" style="display: none;">
+                                        <i class="fas fa-redo me-1"></i>Restart
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" id="stop-campaign-btn">
+                                        <i class="fas fa-stop me-1"></i>Stop
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <!-- Progress Bar -->
+                                <div class="mb-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <span class="fw-bold">Overall Progress</span>
+                                        <span id="progress-percentage">0%</span>
+                                    </div>
+                                    <div class="progress" style="height: 10px;">
+                                        <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                             id="progress-bar" style="width: 0%"></div>
+                                    </div>
+                                    <div class="mt-1">
+                                        <small class="text-muted">
+                                            Current: <span id="current-recipient">-</span> | 
+                                            Device: <span id="current-device">-</span> |
+                                            <span id="typing-status" class="text-warning" style="display: none;">
+                                                <i class="fas fa-keyboard me-1"></i>Typing...
+                                            </span>
+                                            <span id="sending-status" class="text-success" style="display: none;">
+                                                <i class="fas fa-paper-plane me-1"></i>Sending...
+                                            </span>
+                                        </small>
+                                    </div>
+                                </div>
+
+                                <!-- Statistics -->
+                                <div class="row text-center">
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card bg-primary text-white">
+                                            <div class="card-body p-2">
+                                                <div class="h6 mb-0" id="total-messages">0</div>
+                                                <small>Total</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card bg-success text-white">
+                                            <div class="card-body p-2">
+                                                <div class="h6 mb-0" id="sent-messages">0</div>
+                                                <small>Sent</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card bg-danger text-white">
+                                            <div class="card-body p-2">
+                                                <div class="h6 mb-0" id="failed-messages">0</div>
+                                                <small>Failed</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-6 mb-3">
+                                        <div class="card bg-info text-white">
+                                            <div class="card-body p-2">
+                                                <div class="h6 mb-0" id="remaining-messages">0</div>
+                                                <small>Remaining</small>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal fade" id="confirmModal" tabindex="-1" aria-labelledby="confirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="confirmModalLabel">Confirm Action</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="confirmModalBody">
+                    <!-- Modal content will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="confirmActionBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- Recipients Preview Modal -->
+    <div class="modal fade" id="recipientsModal" tabindex="-1" aria-labelledby="recipientsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="recipientsModalLabel">
+                        <i class="fas fa-users me-2"></i>
+                        Recipients Preview
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped table-sm">
+                            <thead>
+                                <tr>
+                                    <th width="10%">#</th>
+                                    <th width="30%">Phone Number</th>
+                                    <th width="25%">Name</th>
+                                    <th width="20%">City</th>
+                                    <th width="15%">Order</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipients-table-body">
+                                <!-- Recipients will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device QR Modal -->
+    <div class="modal fade" id="deviceQRModal" tabindex="-1" aria-labelledby="deviceQRModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="deviceQRModalLabel">
+                        <i class="fas fa-qrcode me-2"></i>
+                        Connect WhatsApp Device
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="device-qr-container">
+                        <!-- QR code will be inserted here -->
+                    </div>
+                    <div class="mt-3">
+                        <h6><i class="fas fa-mobile-alt me-2"></i>How to Connect:</h6>
+                        <ol class="text-start">
+                            <li>Open WhatsApp on your phone</li>
+                            <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
+                            <li>Tap <strong>Link a Device</strong></li>
+                            <li>Point your camera at the QR code above</li>
+                        </ol>
+                    </div>
+                    <div class="mt-3">
+                        <div class="spinner-border text-primary" id="qr-loading" style="display: none;"></div>
+                        <p class="text-muted" id="qr-status">Waiting for QR code...</p>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Success/Error Toast -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <i id="toast-icon" class="me-2"></i>
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toast-body">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+
+    
+    <!-- Custom JavaScript -->
+    <script src="script-pro.js"></script>
+    
+    <!-- Tab Navigation Handler -->
+    <script>
+        // Handle URL fragment navigation for direct tab access
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check if there's a hash in the URL
+            if (window.location.hash) {
+                const hash = window.location.hash.substring(1); // Remove the #
+                
+                // If the hash is 'bulk-message', activate the bulk message tab
+                if (hash === 'bulk-message') {
+                    const bulkMessageTab = document.querySelector('#bulk-message-tab');
+                    const bulkMessagePane = document.querySelector('#bulk-message');
+                    const singleMessageTab = document.querySelector('#single-message-tab');
+                    const singleMessagePane = document.querySelector('#single-message');
+                    
+                    if (bulkMessageTab && bulkMessagePane) {
+                        // Remove active class from single message tab
+                        if (singleMessageTab) {
+                            singleMessageTab.classList.remove('active');
+                        }
+                        if (singleMessagePane) {
+                            singleMessagePane.classList.remove('show', 'active');
+                        }
+                        
+                        // Add active class to bulk message tab
+                        bulkMessageTab.classList.add('active');
+                        bulkMessagePane.classList.add('show', 'active');
+                    }
+                }
+            }
+        });
+    </script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fab fa-whatsapp fa-2x text-success me-3"></i>
+                        <div>
+                            <h5 class="mb-1">WhatsApp Sender Pro</h5>
+                            <p class="mb-0 text-muted">Professional WhatsApp messaging platform</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <span class="text-muted">Support & Contact:</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <i class="fab fa-whatsapp fa-lg text-success me-2"></i>
+                        <a href="https://wa.me/12698832370" target="_blank" class="text-success text-decoration-none fw-bold">
+                            +1 (269) 883-2370
+                        </a>
+                    </div>
+                    <small class="text-muted">Click to open WhatsApp chat</small>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0 text-muted">
+                        &copy; 2024 WhatsApp Sender Pro. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

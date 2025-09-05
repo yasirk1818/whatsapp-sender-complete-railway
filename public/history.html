@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WhatsApp Sender Pro - Message & Campaign History</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body style="display: none;"> <!-- Hide body until authentication check -->
+    <!-- Authentication Check Script -->
+    <script>
+        // Check authentication before showing content
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // Authentication successful, show the page
+                document.body.style.display = 'block';
+                
+                // Update user display name
+                const userDisplayName = document.getElementById('user-display-name');
+                if (userDisplayName) {
+                    userDisplayName.textContent = result.user.fullName || result.user.username;
+                }
+                
+                // Add logout functionality
+                addLogoutButton();
+                
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        });
+        
+        function addLogoutButton() {
+            const headerDiv = document.querySelector('header .d-flex.align-items-center');
+            if (headerDiv) {
+                const logoutBtn = document.createElement('button');
+                logoutBtn.className = 'btn btn-outline-light btn-sm ms-3';
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt me-1"></i>Logout';
+                logoutBtn.onclick = async function() {
+                    try {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        window.location.href = '/login';
+                    }
+                };
+                headerDiv.appendChild(logoutBtn);
+            }
+        }
+    </script>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-success text-white py-3 mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h1 class="h3 mb-0 me-4">
+                            <i class="fas fa-whatsapp me-2"></i>
+                            WhatsApp Sender Pro
+                        </h1>
+                        <nav class="navbar-nav">
+                            <div class="nav nav-pills">
+                                <a class="nav-link text-white border border-white ms-2" href="/dashboard">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="devices.html">
+                                    <i class="fas fa-mobile-alt me-1"></i>Devices
+                                </a>
+                                <a class="nav-link active bg-white text-success" href="history.html">
+                                    <i class="fas fa-history me-1"></i>History
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="profile.html">
+                                    <i class="fas fa-user me-1"></i>Profile
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="text-white me-3">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="user-display-name">Loading...</span>
+                        </span>
+                        <div class="status-indicator" id="connection-status">
+                            <span class="badge bg-warning">
+                                <i class="fas fa-circle-notch fa-spin me-1"></i>
+                                Connecting...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- Main Content -->
+            <div class="col-12">
+                <!-- Page Header -->
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2>
+                        <i class="fas fa-history me-2"></i>
+                        Message & Campaign History
+                    </h2>
+                    <div>
+                        <button class="btn btn-outline-secondary" id="refresh-history-btn">
+                            <i class="fas fa-sync-alt me-2"></i>
+                            Refresh
+                        </button>
+                        <button class="btn btn-outline-info" id="debug-history-btn">
+                            <i class="fas fa-bug me-2"></i>
+                            Debug History
+                        </button>
+                        <button class="btn btn-outline-danger" id="clear-history-btn">
+                            <i class="fas fa-trash me-2"></i>
+                            Clear All History
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Statistics Cards -->
+                <div class="row mb-4">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-primary text-white">
+                            <div class="card-body text-center">
+                                <div class="h3 mb-0" id="total-campaigns">0</div>
+                                <small>Total Campaigns</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <div class="h3 mb-0" id="total-messages-sent">0</div>
+                                <small>Messages Sent</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-danger text-white">
+                            <div class="card-body text-center">
+                                <div class="h3 mb-0" id="total-messages-failed">0</div>
+                                <small>Messages Failed</small>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <div class="h3 mb-0" id="success-rate">0%</div>
+                                <small>Success Rate</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Filter and Search -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-filter me-2"></i>
+                            Filter & Search
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Date Range:</label>
+                                <select class="form-select" id="date-filter">
+                                    <option value="all">All Time</option>
+                                    <option value="today">Today</option>
+                                    <option value="week">Last 7 Days</option>
+                                    <option value="month">Last 30 Days</option>
+                                    <option value="custom">Custom Range</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label class="form-label">Status:</label>
+                                <select class="form-select" id="status-filter">
+                                    <option value="all">All Status</option>
+                                    <option value="completed">Completed</option>
+                                    <option value="active">Active</option>
+                                    <option value="paused">Paused</option>
+                                    <option value="failed">Failed</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label class="form-label">Search:</label>
+                                <input type="text" class="form-control" id="search-input" 
+                                       placeholder="Search campaigns, messages, or recipients...">
+                            </div>
+                            <div class="col-md-2 mb-3">
+                                <label class="form-label">&nbsp;</label>
+                                <button class="btn btn-primary d-block" id="apply-filters-btn">
+                                    <i class="fas fa-search me-1"></i>
+                                    Apply
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row" id="custom-date-range" style="display: none;">
+                            <div class="col-md-3">
+                                <label class="form-label">From Date:</label>
+                                <input type="date" class="form-control" id="from-date">
+                            </div>
+                            <div class="col-md-3">
+                                <label class="form-label">To Date:</label>
+                                <input type="date" class="form-control" id="to-date">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- History Tabs -->
+                <div class="card">
+                    <div class="card-header">
+                        <ul class="nav nav-tabs card-header-tabs" id="historyTabs">
+                            <li class="nav-item">
+                                <a class="nav-link active" id="campaigns-tab" data-bs-toggle="tab" href="#campaigns">
+                                    <i class="fas fa-rocket me-2"></i>
+                                    Campaigns History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="messages-tab" data-bs-toggle="tab" href="#messages">
+                                    <i class="fas fa-paper-plane me-2"></i>
+                                    Messages History
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" id="analytics-tab" data-bs-toggle="tab" href="#analytics">
+                                    <i class="fas fa-chart-bar me-2"></i>
+                                    Analytics
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content" id="historyTabsContent">
+                            <!-- Campaigns History Tab -->
+                            <div class="tab-pane fade show active" id="campaigns" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Campaign Name</th>
+                                                <th>Created</th>
+                                                <th>Status</th>
+                                                <th>Recipients</th>
+                                                <th>Sent</th>
+                                                <th>Failed</th>
+                                                <th>Success Rate</th>
+                                                <th>Duration</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="campaigns-table-body">
+                                            <tr>
+                                                <td colspan="9" class="text-center text-muted py-4">
+                                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                                    Loading campaign history...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Pagination will be added here by JavaScript -->
+                            </div>
+
+                            <!-- Messages History Tab -->
+                            <div class="tab-pane fade" id="messages" role="tabpanel">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Timestamp</th>
+                                                <th>Recipient</th>
+                                                <th>Message</th>
+                                                <th>Device</th>
+                                                <th>Status</th>
+                                                <th>Campaign</th>
+                                                <th>Response Time</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="messages-table-body">
+                                            <tr>
+                                                <td colspan="8" class="text-center text-muted py-4">
+                                                    <i class="fas fa-spinner fa-spin me-2"></i>
+                                                    Loading message history...
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <!-- Pagination will be added here by JavaScript -->
+                            </div>
+
+                            <!-- Analytics Tab -->
+                            <div class="tab-pane fade" id="analytics" role="tabpanel">
+                                <div class="row">
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-chart-pie me-2"></i>
+                                                    Message Status Distribution
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="status-chart">
+                                                    <div class="text-center text-muted">
+                                                        <i class="fas fa-chart-pie fa-3x mb-3"></i>
+                                                        <p>No data available</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6 mb-4">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-chart-line me-2"></i>
+                                                    Messages Over Time
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="timeline-chart">
+                                                    <div class="text-center text-muted">
+                                                        <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                                        <p>No data available</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-12">
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h6 class="mb-0">
+                                                    <i class="fas fa-mobile-alt me-2"></i>
+                                                    Device Usage Statistics
+                                                </h6>
+                                            </div>
+                                            <div class="card-body">
+                                                <div id="device-usage-stats">
+                                                    <div class="text-center text-muted">
+                                                        <i class="fas fa-mobile-alt fa-3x mb-3"></i>
+                                                        <p>No device usage data available</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Campaign Details Modal -->
+    <div class="modal fade" id="campaignDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-rocket me-2"></i>
+                        Campaign Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="campaign-details-content">
+                    <!-- Campaign details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Message Details Modal -->
+    <div class="modal fade" id="messageDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-paper-plane me-2"></i>
+                        Message Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="message-details-content">
+                    <!-- Message details will be loaded here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i id="toast-icon" class="fas fa-info-circle text-info me-2"></i>
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-body">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+
+    
+    <!-- Custom JavaScript -->
+    <script src="history.js"></script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fab fa-whatsapp fa-2x text-success me-3"></i>
+                        <div>
+                            <h5 class="mb-1">WhatsApp Sender Pro</h5>
+                            <p class="mb-0 text-muted">Professional WhatsApp messaging platform</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <span class="text-muted">Support & Contact:</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <i class="fab fa-whatsapp fa-lg text-success me-2"></i>
+                        <a href="https://wa.me/12698832370" target="_blank" class="text-success text-decoration-none fw-bold">
+                            +1 (269) 883-2370
+                        </a>
+                    </div>
+                    <small class="text-muted">Click to open WhatsApp chat</small>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0 text-muted">
+                        &copy; 2024 WhatsApp Sender Pro. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>

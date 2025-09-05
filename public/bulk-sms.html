@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bulk SMS - WhatsApp Sender Pro</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-warning text-dark py-3 mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h1 class="h3 mb-0 me-4">
+                            <i class="fas fa-broadcast-tower me-2"></i>
+                            Bulk SMS Manager
+                        </h1>
+                        <nav class="navbar-nav">
+                            <div class="nav nav-pills">
+                                <a class="nav-link text-dark border border-dark me-2" href="index.html">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                                <a class="nav-link text-dark border border-dark me-2" href="devices.html">
+                                    <i class="fas fa-mobile-alt me-1"></i>Devices
+                                </a>
+                                <a class="nav-link text-dark border border-dark me-2" href="history.html">
+                                    <i class="fas fa-history me-1"></i>History
+                                </a>
+                                <a class="nav-link active bg-dark text-white" href="index.html#bulk-message">
+                                    <i class="fas fa-broadcast-tower me-1"></i>Bulk SMS
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="text-white me-3">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="user-display-name">Loading...</span>
+                        </span>
+                        <span class="badge bg-success me-3">
+                            Ready Devices: <span id="ready-devices-count">0</span>
+                        </span>
+                        <div class="status-indicator" id="connection-status">
+                            <span class="badge bg-secondary">
+                                <i class="fas fa-circle-notch fa-spin me-1"></i>
+                                Connecting...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="row">
+            <!-- Device Selection Panel -->
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-mobile-alt me-2"></i>
+                            Device Selection & Rotation
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Device Selection Strategy -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Rotation Strategy:</label>
+                            <select class="form-select" id="rotation-strategy">
+                                <option value="round-robin">Round Robin (Default)</option>
+                                <option value="random">Random Selection</option>
+                                <option value="load-balanced">Load Balanced</option>
+                                <option value="manual">Manual Selection</option>
+                            </select>
+                            <div class="form-text">Choose how messages are distributed across devices</div>
+                        </div>
+
+                        <!-- Manual Device Selection (hidden by default) -->
+                        <div class="mb-3" id="manual-device-selection" style="display: none;">
+                            <label class="form-label fw-bold">Select Devices:</label>
+                            <div id="device-checkboxes">
+                                <div class="text-muted">No devices available</div>
+                            </div>
+                        </div>
+
+                        <!-- Device Statistics -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Device Status:</label>
+                            <div class="row text-center">
+                                <div class="col-6">
+                                    <div class="bg-success text-white p-2 rounded mb-2">
+                                        <div class="h4 mb-0" id="selected-devices-count">0</div>
+                                        <small>Selected</small>
+                                    </div>
+                                </div>
+                                <div class="col-6">
+                                    <div class="bg-info text-white p-2 rounded mb-2">
+                                        <div class="h4 mb-0" id="total-ready-devices">0</div>
+                                        <small>Available</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Message Rate Settings -->
+                        <div class="mb-3">
+                            <label for="message-delay" class="form-label fw-bold">
+                                <i class="fas fa-clock me-1"></i>
+                                Message Delay:
+                            </label>
+                            <select class="form-select" id="message-delay">
+                                <option value="1000">1 second (Fast - Risk)</option>
+                                <option value="2000" selected>2 seconds (Normal)</option>
+                                <option value="3000">3 seconds (Safe)</option>
+                                <option value="5000">5 seconds (Very Safe)</option>
+                                <option value="10000">10 seconds (Ultra Safe)</option>
+                                <option value="custom">Custom...</option>
+                            </select>
+                            <div id="custom-delay" style="display: none;" class="mt-2">
+                                <input type="number" class="form-control" id="custom-delay-input" 
+                                       placeholder="Enter delay in milliseconds" min="500" max="60000">
+                            </div>
+                        </div>
+
+                        <!-- Refresh Devices -->
+                        <div class="d-grid">
+                            <button class="btn btn-outline-primary" id="refresh-devices-btn">
+                                <i class="fas fa-sync-alt me-2"></i>
+                                Refresh Device List
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bulk SMS Form -->
+            <div class="col-lg-8">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-paper-plane me-2"></i>
+                            Bulk Message Campaign
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <form id="bulk-sms-form">
+                            <!-- Input Method Selection -->
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-users me-2"></i>
+                                    Recipients Input Method:
+                                </label>
+                                <div class="nav nav-pills" id="input-method-tabs" role="tablist">
+                                    <button class="nav-link active" id="manual-input-tab" data-bs-toggle="pill" 
+                                            data-bs-target="#manual-input" type="button" role="tab">
+                                        <i class="fas fa-keyboard me-1"></i> Manual Input
+                                    </button>
+                                    <button class="nav-link" id="csv-upload-tab" data-bs-toggle="pill" 
+                                            data-bs-target="#csv-upload" type="button" role="tab">
+                                        <i class="fas fa-file-csv me-1"></i> CSV Upload
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Tab Content -->
+                            <div class="tab-content mb-3">
+                                <!-- Manual Input Tab -->
+                                <div class="tab-pane fade show active" id="manual-input" role="tabpanel">
+                                    <div class="mb-3">
+                                        <label for="manual-numbers-input" class="form-label fw-bold">
+                                            <i class="fas fa-phone me-2"></i>
+                                            Enter Phone Numbers:
+                                        </label>
+                                        <textarea class="form-control" id="manual-numbers-input" rows="8" 
+                                                  placeholder="Enter contact details (one per line):&#10;&#10;+1234567890,John Doe,New York,ORD001&#10;+9876543210,Jane Smith,London,ORD002&#10;+1122334455,Mike Johnson,Paris,ORD003&#10;&#10;Format: +PhoneNumber,Name,City,Order&#10;Example: +923001234567,Ali Ahmed,Karachi,ORD123&#10;Minimum required: +923001234567,Name"></textarea>
+                                        <div class="form-text">
+                                            <strong>Format:</strong> +PhoneNumber,Name,City,Order (City and Order are optional)<br>
+                                            Example: <code>+923001234567,Ali Ahmed,Karachi,ORD123</code><br>
+                                            Minimum: <code>+923001234567,Ali Ahmed</code><br>
+                                            Parsed contacts: <span id="manual-count" class="fw-bold text-success">0</span>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-outline-primary w-100" id="parse-manual-numbers">
+                                                <i class="fas fa-sync-alt me-1"></i> Parse Numbers
+                                            </button>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <button type="button" class="btn btn-outline-secondary w-100" id="clear-manual-numbers">
+                                                <i class="fas fa-trash me-1"></i> Clear All
+                                            </button>
+                                        </div>
+                                    </div>
+                                    
+                                    <div id="manual-preview" class="mt-3" style="display: none;">
+                                        <div class="alert alert-success">
+                                            <strong>Parsed:</strong> <span id="manual-parsed-count">0</span> valid numbers found
+                                            <button type="button" class="btn btn-sm btn-outline-success ms-2" id="preview-manual-numbers">
+                                                <i class="fas fa-eye"></i> Preview List
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- CSV Upload Tab -->
+                                <div class="tab-pane fade" id="csv-upload" role="tabpanel">
+                                    <div class="mb-3">
+                                        <label for="csv-file" class="form-label fw-bold">
+                                            <i class="fas fa-file-csv me-2"></i>
+                                            Recipients CSV File:
+                                        </label>
+                                        <input type="file" class="form-control" id="csv-file" accept=".csv">
+                                        <div class="form-text">
+                                            CSV with columns: <strong>phone</strong>, <strong>name</strong>, <strong>city</strong>, <strong>order</strong> (only phone and name are required)
+                                            <a href="#" id="download-csv-template" class="ms-2">
+                                                <i class="fas fa-download"></i> Download Template
+                                            </a>
+                                        </div>
+                                        <div id="csv-preview" class="mt-2" style="display: none;">
+                                            <div class="alert alert-info">
+                                                <strong>Preview:</strong> <span id="csv-count">0</span> recipients loaded
+                                                <button type="button" class="btn btn-sm btn-outline-info ms-2" id="preview-recipients">
+                                                    <i class="fas fa-eye"></i> Preview List
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Combined Recipients Preview -->
+                            <div id="recipients-summary" class="mb-3" style="display: none;">
+                                <div class="alert alert-primary">
+                                    <i class="fas fa-users me-2"></i>
+                                    <strong>Total Recipients:</strong> <span id="total-recipients-count">0</span>
+                                    <button type="button" class="btn btn-sm btn-outline-primary ms-2" id="preview-all-recipients">
+                                        <i class="fas fa-eye"></i> Preview All
+                                    </button>
+                                    <button type="button" class="btn btn-sm btn-outline-warning ms-2" id="clear-all-recipients">
+                                        <i class="fas fa-trash"></i> Clear All Recipients
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Message Template -->
+                            <div class="mb-3">
+                                <label for="message-template" class="form-label fw-bold">
+                                    <i class="fas fa-comment me-2"></i>
+                                    Message Template:
+                                </label>
+                                <textarea class="form-control" id="message-template" rows="5" required 
+                                          placeholder="Enter your message template here...&#10;&#10;Available variables: {name}, {city}, {order}, {mobile}&#10;Example: Hello {name} from {city}, your order {order} is ready! Contact: {mobile}"></textarea>
+                                <div class="form-text">
+                                    Available variables: <code>{name}</code>, <code>{city}</code>, <code>{order}</code>, <code>{mobile}</code><br>
+                                    Character count: <span id="char-count" class="fw-bold">0</span>
+                                </div>
+                            </div>
+
+                            <!-- Attachment -->
+                            <div class="mb-3">
+                                <label for="bulk-attachment" class="form-label fw-bold">
+                                    <i class="fas fa-paperclip me-2"></i>
+                                    Attachment (Optional):
+                                </label>
+                                <input type="file" class="form-control" id="bulk-attachment" 
+                                       accept=".jpg,.jpeg,.png,.gif,.pdf,.doc,.docx,.txt,.mp3,.mp4,.avi,.mov">
+                                <div class="form-text">Max 10MB. Supported: Images, Documents, Audio, Video</div>
+                                <div id="attachment-preview" class="mt-2" style="display: none;">
+                                    <div class="alert alert-secondary d-flex justify-content-between align-items-center">
+                                        <span><i class="fas fa-file me-2"></i><span id="attachment-name"></span></span>
+                                        <button type="button" class="btn-close" id="remove-attachment"></button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Campaign Settings -->
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <label for="campaign-name" class="form-label fw-bold">
+                                        <i class="fas fa-tag me-1"></i>
+                                        Campaign Name:
+                                    </label>
+                                    <input type="text" class="form-control" id="campaign-name" 
+                                           placeholder="Enter campaign name">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-keyboard me-1"></i>
+                                        Human-Like Typing:
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="typing-simulation" checked>
+                                        <label class="form-check-label" for="typing-simulation">
+                                            Show "Typing..." status
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label fw-bold">
+                                        <i class="fas fa-shield-alt me-1"></i>
+                                        Safety Mode:
+                                    </label>
+                                    <div class="form-check form-switch">
+                                        <input class="form-check-input" type="checkbox" id="safety-mode" checked>
+                                        <label class="form-check-label" for="safety-mode">
+                                            Enable anti-spam protection
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Send Button -->
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-warning btn-lg text-dark fw-bold" 
+                                        id="start-campaign-btn" disabled>
+                                    <i class="fas fa-rocket me-2"></i>
+                                    Start Bulk SMS Campaign
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Campaign Progress -->
+                <div class="card shadow-sm mt-4" id="campaign-progress" style="display: none;">
+                    <div class="card-header bg-info text-white d-flex justify-content-between">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chart-line me-2"></i>
+                            Campaign Progress: <span id="campaign-name-display"></span>
+                        </h5>
+                        <button class="btn btn-sm btn-danger" id="stop-campaign-btn">
+                            <i class="fas fa-stop me-1"></i>Stop
+                        </button>
+                    </div>
+                    <div class="card-body">
+                        <!-- Progress Bar -->
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Overall Progress</span>
+                                <span id="progress-percentage">0%</span>
+                            </div>
+                            <div class="progress" style="height: 10px;">
+                                <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                                     id="progress-bar" style="width: 0%"></div>
+                            </div>
+                            <div class="mt-1">
+                                <small class="text-muted">
+                                    Current: <span id="current-recipient">-</span> | 
+                                    Device: <span id="current-device">-</span>
+                                </small>
+                            </div>
+                        </div>
+
+                        <!-- Statistics -->
+                        <div class="row text-center">
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card bg-primary text-white">
+                                    <div class="card-body p-2">
+                                        <div class="h4 mb-0" id="total-messages">0</div>
+                                        <small>Total</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card bg-success text-white">
+                                    <div class="card-body p-2">
+                                        <div class="h4 mb-0" id="sent-messages">0</div>
+                                        <small>Sent</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card bg-danger text-white">
+                                    <div class="card-body p-2">
+                                        <div class="h4 mb-0" id="failed-messages">0</div>
+                                        <small>Failed</small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3 col-6 mb-3">
+                                <div class="card bg-info text-white">
+                                    <div class="card-body p-2">
+                                        <div class="h4 mb-0" id="remaining-messages">0</div>
+                                        <small>Remaining</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Device Rotation Status -->
+                        <div class="mt-3">
+                            <h6 class="fw-bold">Device Rotation Status:</h6>
+                            <div id="device-rotation-status" class="row">
+                                <!-- Device rotation cards will be inserted here -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recipients Preview Modal -->
+    <div class="modal fade" id="recipientsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-users me-2"></i>
+                        Recipients Preview
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive" style="max-height: 400px;">
+                        <table class="table table-striped table-sm">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>#</th>
+                                    <th>Phone Number</th>
+                                    <th>Name</th>
+                                    <th>City</th>
+                                    <th>Order</th>
+                                </tr>
+                            </thead>
+                            <tbody id="recipients-table-body">
+                                <!-- Recipients will be inserted here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i id="toast-icon" class="me-2"></i>
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-body">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+
+    
+    <!-- Custom JavaScript -->
+    <script src="bulk-sms-manager.js"></script>
+</body>
+</html>

@@ -1,0 +1,1528 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - WhatsApp Sender</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="styles.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #f8f9fa;
+        }
+        
+        .navbar {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .navbar-brand {
+            font-weight: bold;
+            color: white !important;
+        }
+        
+        .navbar-nav .nav-link {
+            color: rgba(255,255,255,0.9) !important;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-nav .nav-link:hover {
+            color: white !important;
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            height: fit-content;
+            position: sticky;
+            top: 100px;
+        }
+        
+        .sidebar .nav-link {
+            color: #666;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            margin-bottom: 0.5rem;
+            transition: all 0.3s ease;
+        }
+        
+        .sidebar .nav-link:hover,
+        .sidebar .nav-link.active {
+            background: #25D366;
+            color: white;
+        }
+        
+        .main-content {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            padding: 2rem;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 5px 15px rgba(37, 211, 102, 0.3);
+        }
+        
+        .stats-card h3 {
+            margin: 0;
+            font-size: 2rem;
+            font-weight: bold;
+        }
+        
+        .stats-card p {
+            margin: 0;
+            opacity: 0.9;
+        }
+        
+        .table {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+        
+        .table thead th {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 1rem;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            vertical-align: middle;
+            border-color: #f0f0f0;
+        }
+        
+        .btn-sm {
+            padding: 0.25rem 0.5rem;
+            margin: 0 0.25rem;
+        }
+        
+        .badge {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .loading.show {
+            display: block;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="/admin">
+                <i class="fab fa-whatsapp"></i> WhatsApp Sender Admin
+            </a>
+            
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="/dashboard">
+                            <i class="fas fa-tachometer-alt"></i> Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <span class="nav-link" id="userInfo">
+                            <i class="fas fa-user"></i> <span id="userName">Loading...</span>
+                        </span>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="showChangePasswordModal()">
+                            <i class="fas fa-key"></i> Change Password
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i> Logout
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container-fluid mt-4">
+        <div class="row">
+            <!-- Sidebar -->
+            <div class="col-md-3">
+                <div class="sidebar">
+                    <h5 class="mb-3">Admin Menu</h5>
+                    <nav class="nav flex-column">
+                        <a class="nav-link active" href="#" onclick="showSection('dashboard')">
+                            <i class="fas fa-chart-line"></i> Dashboard
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('users')">
+                            <i class="fas fa-users"></i> User Management
+                        </a>
+                        <a class="nav-link" href="#" onclick="showSection('settings')">
+                            <i class="fas fa-cog"></i> System Settings
+                        </a>
+                    </nav>
+                </div>
+            </div>
+            
+            <!-- Main Content -->
+            <div class="col-md-9">
+                <div class="main-content">
+                    <div id="alert-container"></div>
+                    
+                    <!-- Dashboard Section -->
+                    <div id="dashboard-section" class="content-section">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="fas fa-chart-line"></i> Dashboard Overview</h2>
+                            <button class="btn btn-primary" onclick="refreshStats()">
+                                <i class="fas fa-sync-alt"></i> Refresh
+                            </button>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <h3 id="totalUsers">0</h3>
+                                    <p><i class="fas fa-users"></i> Total Users</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <h3 id="activeUsers">0</h3>
+                                    <p><i class="fas fa-user-check"></i> Active Users</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="stats-card">
+                                    <h3 id="adminUsers">0</h3>
+                                    <p><i class="fas fa-user-shield"></i> Admin Users</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Users Section -->
+                    <div id="users-section" class="content-section" style="display: none;">
+                        <div class="d-flex justify-content-between align-items-center mb-4">
+                            <h2><i class="fas fa-users"></i> User Management</h2>
+                            <div>
+                                <button class="btn btn-success me-2" onclick="showAddUserModal()">
+                                    <i class="fas fa-user-plus"></i> Add User
+                                </button>
+                                <button class="btn btn-info me-2" onclick="exportUsers()">
+                                    <i class="fas fa-download"></i> Export Users
+                                </button>
+                                <button class="btn btn-warning me-2" onclick="showRestoreModal()">
+                                    <i class="fas fa-upload"></i> Restore Users
+                                </button>
+                                <button class="btn btn-primary" onclick="loadUsers()">
+                                    <i class="fas fa-sync-alt"></i> Refresh
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="loading" id="usersLoading">
+                            <i class="fas fa-spinner fa-spin fa-2x"></i>
+                            <p>Loading users...</p>
+                        </div>
+                        
+                        <div class="table-responsive">
+                            <table class="table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Username</th>
+                                        <th>Email</th>
+                                        <th>Full Name</th>
+                                        <th>Role</th>
+                                        <th>Status</th>
+                                        <th>Expiry Date</th>
+                                        <th>Created</th>
+                                        <th>Last Login</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="usersTable">
+                                    <tr>
+                                        <td colspan="10" class="text-center">Loading...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    
+                    <!-- Settings Section -->
+                    <div id="settings-section" class="content-section" style="display: none;">
+                        <h2><i class="fas fa-cog"></i> System Settings</h2>
+                        
+                        <div class="loading" id="settingsLoading">
+                            <i class="fas fa-spinner fa-spin fa-2x"></i>
+                            <p>Loading settings...</p>
+                        </div>
+                        
+                        <div class="row" id="settingsContent" style="display: none;">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-user-plus"></i> User Registration</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="registrationEnabled">
+                                            <label class="form-check-label" for="registrationEnabled">
+                                                <strong>Enable User Registration</strong>
+                                            </label>
+                                            <div class="form-text">
+                                                When disabled, new users cannot register accounts
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="registrationDisabledTitle" class="form-label">
+                                                <strong>Disabled Registration Title</strong>
+                                            </label>
+                                            <input type="text" class="form-control" id="registrationDisabledTitle" 
+                                                   placeholder="e.g., Registration Temporarily Disabled">
+                                            <div class="form-text">
+                                                Title shown when registration is disabled
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="registrationDisabledMessage" class="form-label">
+                                                <strong>Custom Disabled Message</strong>
+                                            </label>
+                                            <textarea class="form-control" id="registrationDisabledMessage" rows="3"
+                                                      placeholder="Enter your custom message when registration is disabled..."></textarea>
+                                            <div class="form-text">
+                                                Custom message displayed to users when registration is disabled
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-clock"></i> User Expiry System</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="form-check form-switch mb-3">
+                                            <input class="form-check-input" type="checkbox" id="userExpiryEnabled">
+                                            <label class="form-check-label" for="userExpiryEnabled">
+                                                <strong>Enable User Expiry</strong>
+                                            </label>
+                                            <div class="form-text">
+                                                When enabled, users will have limited access time
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="defaultExpiryDays" class="form-label">
+                                                <strong>Default Expiry (Days)</strong>
+                                            </label>
+                                            <input type="number" class="form-control" id="defaultExpiryDays" 
+                                                   min="1" max="365" value="30">
+                                            <div class="form-text">
+                                                Number of days new users will have access
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Account Status Messages Section -->
+                        <div class="row mt-4" id="accountMessagesCustomization" style="display: none;">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-exclamation-triangle"></i> Account Status Messages</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="accountExpiredTitle" class="form-label">
+                                                    <strong>Account Expired Title</strong>
+                                                </label>
+                                                <input type="text" class="form-control" id="accountExpiredTitle" 
+                                                       placeholder="e.g., Account Expired">
+                                                <div class="form-text">
+                                                    Title shown when user account is expired
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="accountExpiredMessage" class="form-label">
+                                                    <strong>Account Expired Message</strong>
+                                                </label>
+                                                <textarea class="form-control" id="accountExpiredMessage" rows="3"
+                                                          placeholder="e.g., Your account has expired. Please contact administrator to renew access."></textarea>
+                                                <div class="form-text">
+                                                    Message shown when user account is expired
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Note:</strong> These messages will be displayed to users when they try to log in with an expired account.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                                
+                        <!-- User Registration & Expiry Settings Section -->
+                        <div class="row mt-4" id="userExpirySettings" style="display: none;">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-user-clock"></i> User Registration & Expiry Settings</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="registrationEnabled" class="form-label">
+                                                    <strong>Enable User Registration</strong>
+                                                </label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="registrationEnabled">
+                                                    <label class="form-check-label" for="registrationEnabled">
+                                                        Allow new user registration
+                                                    </label>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="userExpiryEnabled" class="form-label">
+                                                    <strong>Enable User Expiry</strong>
+                                                </label>
+                                                <div class="form-check form-switch">
+                                                    <input class="form-check-input" type="checkbox" id="userExpiryEnabled">
+                                                    <label class="form-check-label" for="userExpiryEnabled">
+                                                        Enable automatic user expiry
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        </div>
+                                                
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="defaultUserExpiryDays" class="form-label">
+                                                    <strong>Default Expiry Days for New Users</strong>
+                                                </label>
+                                                <input type="number" class="form-control" id="defaultUserExpiryDays" min="1" max="365" placeholder="1">
+                                                <div class="form-text">
+                                                    Number of days new users will be active (1-365 days)
+                                                </div>
+                                            </div>
+                                        </div>
+                                                
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="registrationDisabledTitle" class="form-label">
+                                                    <strong>Registration Disabled Title</strong>
+                                                </label>
+                                                <input type="text" class="form-control" id="registrationDisabledTitle" placeholder="Registration Temporarily Disabled">
+                                                <div class="form-text">
+                                                    Title shown when registration is disabled
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="registrationDisabledMessage" class="form-label">
+                                                    <strong>Registration Disabled Message</strong>
+                                                </label>
+                                                <textarea class="form-control" id="registrationDisabledMessage" rows="3" placeholder="User registration is currently disabled. Please contact administrator."></textarea>
+                                                <div class="form-text">
+                                                    Message shown when registration is disabled
+                                                </div>
+                                            </div>
+                                        </div>
+                                                
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            <strong>Note:</strong> These settings control user registration and automatic account expiry for new users.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <!-- Footer Customization Section -->
+                        <div class="row mt-4" id="footerCustomization" style="display: none;">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header">
+                                        <h5><i class="fas fa-edit"></i> Footer Customization</h5>
+                                    </div>
+                                    <div class="card-body">
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="footerCompanyName" class="form-label">
+                                                    <strong>Company/App Name</strong>
+                                                </label>
+                                                <input type="text" class="form-control" id="footerCompanyName" 
+                                                       placeholder="e.g., WhatsApp Sender Pro">
+                                                <div class="form-text">
+                                                    Main brand name displayed in footer
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="footerDescription" class="form-label">
+                                                    <strong>Description</strong>
+                                                </label>
+                                                <input type="text" class="form-control" id="footerDescription" 
+                                                       placeholder="e.g., Professional WhatsApp messaging platform">
+                                                <div class="form-text">
+                                                    Short description under company name
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-6 mb-3">
+                                                <label for="footerSupportPhone" class="form-label">
+                                                    <strong>Support Phone Number</strong>
+                                                </label>
+                                                <input type="text" class="form-control" id="footerSupportPhone" 
+                                                       placeholder="e.g., +1 (269) 883-2370">
+                                                <div class="form-text">
+                                                    Contact phone number for support
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6 mb-3">
+                                                <label for="footerWhatsappLink" class="form-label">
+                                                    <strong>WhatsApp Contact Link</strong>
+                                                </label>
+                                                <input type="url" class="form-control" id="footerWhatsappLink" 
+                                                       placeholder="e.g., https://wa.me/12698832370">
+                                                <div class="form-text">
+                                                    WhatsApp direct contact link
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label for="footerCopyright" class="form-label">
+                                                <strong>Copyright Text</strong>
+                                            </label>
+                                            <input type="text" class="form-control" id="footerCopyright" 
+                                                   placeholder="e.g., © 2024 Your Company Name. All rights reserved.">
+                                            <div class="form-text">
+                                                Copyright notice and year
+                                            </div>
+                                        </div>
+                                        
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Save Settings Button -->
+                        <div class="text-center mt-4" id="settingsActions" style="display: none;">
+                            <button class="btn btn-primary btn-lg" onclick="saveSettings()">
+                                <i class="fas fa-save"></i> Save All Settings
+                            </button>
+                            <button class="btn btn-secondary ms-2" onclick="loadSettings()">
+                                <i class="fas fa-sync-alt"></i> Reset
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        let currentUser = null;
+        
+        // Check authentication on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const result = await response.json();
+                
+                if (!result.success || result.user.role !== 'admin') {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                currentUser = result.user;
+                document.getElementById('userName').textContent = result.user.fullName || result.user.username;
+                
+                // Load initial data
+                refreshStats();
+                loadUsers();
+                loadSettings();
+                loadFooterSettings();
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        });
+        
+        function showSection(section) {
+            // Hide all sections
+            document.querySelectorAll('.content-section').forEach(el => {
+                el.style.display = 'none';
+            });
+            
+            // Remove active class from all nav links
+            document.querySelectorAll('.sidebar .nav-link').forEach(el => {
+                el.classList.remove('active');
+            });
+            
+            // Show selected section
+            document.getElementById(section + '-section').style.display = 'block';
+            
+            // Add active class to clicked nav link
+            event.target.classList.add('active');
+            
+            // Load section-specific data
+            if (section === 'settings') {
+                loadSettings();
+            }
+        }
+        
+        async function refreshStats() {
+            try {
+                const response = await fetch('/api/admin/users');
+                const result = await response.json();
+                
+                if (result.success) {
+                    const users = result.users;
+                    document.getElementById('totalUsers').textContent = users.length;
+                    document.getElementById('activeUsers').textContent = users.filter(u => u.is_active).length;
+                    document.getElementById('adminUsers').textContent = users.filter(u => u.role === 'admin').length;
+                }
+            } catch (error) {
+                showAlert('Error loading dashboard stats', 'danger');
+            }
+        }
+        
+        async function loadUsers() {
+            const loading = document.getElementById('usersLoading');
+            const tbody = document.getElementById('usersTable');
+            
+            loading.classList.add('show');
+            
+            try {
+                const response = await fetch('/api/admin/users');
+                const result = await response.json();
+                
+                if (result.success) {
+                    tbody.innerHTML = result.users.map(user => {
+                        const expiryDate = user.expiry_date ? formatDate(user.expiry_date) : 'No Expiry';
+                        const isExpired = user.is_expired;
+                        const expiryClass = isExpired ? 'text-danger' : (user.expiry_date ? 'text-warning' : 'text-muted');
+                        
+                        return `
+                        <tr>
+                            <td>${user.id}</td>
+                            <td>${user.username}</td>
+                            <td>${user.email}</td>
+                            <td>${user.full_name || '-'}</td>
+                            <td>
+                                <select class="form-select form-select-sm" onchange="updateUserRole(${user.id}, this.value)">
+                                    <option value="user" ${user.role === 'user' ? 'selected' : ''}>User</option>
+                                    <option value="admin" ${user.role === 'admin' ? 'selected' : ''}>Admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <span class="badge ${user.is_active ? 'bg-success' : 'bg-danger'}">
+                                    ${user.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="${expiryClass}">${expiryDate}</span>
+                                ${isExpired ? '<br><small class="text-danger">EXPIRED</small>' : ''}
+                                <br><button class="btn btn-sm btn-outline-primary mt-1" onclick="updateExpiry(${user.id})">
+                                    <i class="fas fa-calendar-alt"></i> Set
+                                </button>
+                            </td>
+                            <td>${formatDate(user.created_at)}</td>
+                            <td>${user.last_login ? formatDate(user.last_login) : 'Never'}</td>
+                            <td>
+                                <button class="btn btn-sm ${user.is_active ? 'btn-warning' : 'btn-success'}" 
+                                        onclick="toggleUserStatus(${user.id}, ${!user.is_active})">
+                                    <i class="fas ${user.is_active ? 'fa-ban' : 'fa-check'}"></i>
+                                    ${user.is_active ? 'Deactivate' : 'Activate'}
+                                </button>
+                                ${user.id !== currentUser.id ? `
+                                    <button class="btn btn-sm btn-danger" onclick="deleteUser(${user.id})">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </button>
+                                ` : ''}
+                            </td>
+                        </tr>
+                        `;
+                    }).join('');
+                } else {
+                    tbody.innerHTML = '<tr><td colspan="10" class="text-center">Error loading users</td></tr>';
+                }
+            } catch (error) {
+                tbody.innerHTML = '<tr><td colspan="10" class="text-center">Error loading users</td></tr>';
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+        
+        async function toggleUserStatus(userId, isActive) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/status`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ isActive })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    loadUsers();
+                    refreshStats();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error updating user status', 'danger');
+            }
+        }
+        
+        async function updateUserRole(userId, role) {
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/role`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ role })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    refreshStats();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error updating user role', 'danger');
+            }
+        }
+        
+        async function deleteUser(userId) {
+            if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}`, {
+                    method: 'DELETE'
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    loadUsers();
+                    refreshStats();
+                } else {
+                    showAlert(result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error deleting user', 'danger');
+            }
+        }
+        
+        async function logout() {
+            try {
+                await fetch('/api/auth/logout', { method: 'POST' });
+                window.location.href = '/login';
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        }
+        
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show">
+                    <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'}"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                const alert = alertContainer.querySelector('.alert');
+                if (alert) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        function formatDate(dateString) {
+            if (!dateString) return 'Never';
+            const date = new Date(dateString);
+            return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
+        }
+        
+        // Settings Management
+        async function loadSettings() {
+            const loading = document.getElementById('settingsLoading');
+            const content = document.getElementById('settingsContent');
+            const actions = document.getElementById('settingsActions');
+            const footerSection = document.getElementById('footerCustomization');
+            const accountMessagesSection = document.getElementById('accountMessagesCustomization');
+            const userExpirySection = document.getElementById('userExpirySettings');
+            
+            loading.classList.add('show');
+            content.style.display = 'none';
+            actions.style.display = 'none';
+            footerSection.style.display = 'none';
+            accountMessagesSection.style.display = 'none';
+            userExpirySection.style.display = 'none';
+            
+            try {
+                const response = await fetch('/api/admin/settings');
+                const result = await response.json();
+                
+                if (result.success) {
+                    document.getElementById('registrationEnabled').checked = result.settings.registration_enabled;
+                    document.getElementById('userExpiryEnabled').checked = result.settings.user_expiry_enabled;
+                    document.getElementById('defaultExpiryDays').value = result.settings.default_user_expiry_days || 1;
+                    document.getElementById('registrationDisabledTitle').value = result.settings.registration_disabled_title || 'Registration Temporarily Disabled';
+                    document.getElementById('registrationDisabledMessage').value = result.settings.registration_disabled_message || 'User registration is currently disabled. Please contact administrator.';
+                    
+                    // Load new user expiry settings section
+                    document.getElementById('defaultUserExpiryDays').value = result.settings.default_user_expiry_days || 1;
+                    
+                    // Load account expired message settings
+                    document.getElementById('accountExpiredTitle').value = result.settings.account_expired_title || 'Account Expired';
+                    document.getElementById('accountExpiredMessage').value = result.settings.account_expired_message || 'Your account has expired. Please contact administrator to renew access.';
+                    
+                    // Load footer settings
+                    document.getElementById('footerCompanyName').value = result.settings.footer_company_name || 'WhatsApp Sender Pro';
+                    document.getElementById('footerDescription').value = result.settings.footer_description || 'Professional WhatsApp messaging platform';
+                    document.getElementById('footerCopyright').value = result.settings.footer_copyright || '© 2024 WhatsApp Sender Pro. All rights reserved.';
+                    document.getElementById('footerSupportPhone').value = result.settings.footer_support_phone || '+1 (269) 883-2370';
+                    document.getElementById('footerWhatsappLink').value = result.settings.footer_whatsapp_link || 'https://wa.me/12698832370';
+                    
+                    content.style.display = 'block';
+                    actions.style.display = 'block';
+                    footerSection.style.display = 'block';
+                    accountMessagesSection.style.display = 'block';
+                    userExpirySection.style.display = 'block';
+                } else {
+                    showAlert('Error loading settings: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error loading settings', 'danger');
+            } finally {
+                loading.classList.remove('show');
+            }
+        }
+        
+        async function saveSettings() {
+            try {
+                const settings = {
+                    registration_enabled: document.getElementById('registrationEnabled').checked,
+                    user_expiry_enabled: document.getElementById('userExpiryEnabled').checked,
+                    default_user_expiry_days: parseInt(document.getElementById('defaultUserExpiryDays').value) || 1,
+                    registration_disabled_title: document.getElementById('registrationDisabledTitle').value.trim(),
+                    registration_disabled_message: document.getElementById('registrationDisabledMessage').value.trim(),
+                    account_expired_title: document.getElementById('accountExpiredTitle').value.trim(),
+                    account_expired_message: document.getElementById('accountExpiredMessage').value.trim(),
+                    footer_company_name: document.getElementById('footerCompanyName').value.trim(),
+                    footer_description: document.getElementById('footerDescription').value.trim(),
+                    footer_copyright: document.getElementById('footerCopyright').value.trim(),
+                    footer_support_phone: document.getElementById('footerSupportPhone').value.trim(),
+                    footer_whatsapp_link: document.getElementById('footerWhatsappLink').value.trim()
+                };
+                
+                const response = await fetch('/api/admin/settings', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ settings })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('Settings saved successfully', 'success');
+                    // Update footer with new settings
+                    updateFooterContent();
+                } else {
+                    showAlert('Error saving settings: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error saving settings', 'danger');
+            }
+        }
+        
+        async function updateExpiry(userId) {
+            const newExpiry = prompt('Enter new expiry date (YYYY-MM-DD) or leave empty for no expiry:');
+            
+            if (newExpiry === null) return; // User cancelled
+            
+            let expiryDate = null;
+            if (newExpiry.trim()) {
+                expiryDate = new Date(newExpiry.trim());
+                if (isNaN(expiryDate.getTime())) {
+                    showAlert('Invalid date format. Please use YYYY-MM-DD', 'danger');
+                    return;
+                }
+            }
+            
+            try {
+                const response = await fetch(`/api/admin/users/${userId}/expiry`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ expiryDate: expiryDate ? expiryDate.toISOString() : null })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showAlert('User expiry updated successfully', 'success');
+                    loadUsers();
+                } else {
+                    showAlert('Error updating expiry: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showAlert('Error updating user expiry', 'danger');
+            }
+        }
+        
+        // Add User Functions
+        function showAddUserModal() {
+            // Reset form
+            document.getElementById('addUserForm').reset();
+            document.getElementById('addUserAlert').innerHTML = '';
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('addUserModal')).show();
+        }
+        
+        async function createUser() {
+            const alertContainer = document.getElementById('addUserAlert');
+            
+            try {
+                const formData = {
+                    username: document.getElementById('newUsername').value.trim(),
+                    email: document.getElementById('newEmail').value.trim(),
+                    fullName: document.getElementById('newFullName').value.trim(),
+                    phone: document.getElementById('newPhone').value.trim(),
+                    role: document.getElementById('newRole').value,
+                    password: document.getElementById('newPassword').value,
+                    expiryDays: document.getElementById('newExpiryDays').value
+                };
+                
+                // Validation
+                if (!formData.username || !formData.email || !formData.password) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> Please fill all required fields.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (formData.password.length < 6) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> Password must be at least 6 characters long.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const response = await fetch('/api/admin/users/create', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> User created successfully!
+                        </div>
+                    `;
+                    
+                    // Refresh users list
+                    loadUsers();
+                    refreshStats();
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('addUserModal')).hide();
+                    }, 2000);
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> Error creating user. Please try again.
+                    </div>
+                `;
+            }
+        }
+        
+        // Change Password Functions
+        function showChangePasswordModal() {
+            // Reset form
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('changePasswordAlert').innerHTML = '';
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('changePasswordModal')).show();
+        }
+        
+        async function changePassword() {
+            const alertContainer = document.getElementById('changePasswordAlert');
+            
+            try {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPasswordChange').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+                
+                // Validation
+                if (!currentPassword || !newPassword || !confirmPassword) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> Please fill all fields.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (newPassword !== confirmPassword) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> New passwords do not match.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                if (newPassword.length < 6) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> New password must be at least 6 characters long.
+                        </div>
+                    `;
+                    return;
+                }
+                
+                const response = await fetch('/api/admin/change-password', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        currentPassword,
+                        newPassword
+                    })
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> Password changed successfully!
+                        </div>
+                    `;
+                    
+                    // Close modal after 2 seconds
+                    setTimeout(() => {
+                        bootstrap.Modal.getInstance(document.getElementById('changePasswordModal')).hide();
+                    }, 2000);
+                } else {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> ${result.error}
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> Error changing password. Please try again.
+                    </div>
+                `;
+            }
+        }
+        
+        // Footer management functions
+        async function loadFooterSettings() {
+            try {
+                const response = await fetch('/api/footer-settings');
+                const result = await response.json();
+                
+                if (result.success) {
+                    updateFooterContent(result.footer);
+                }
+            } catch (error) {
+                console.log('Could not load footer settings, using defaults');
+            }
+        }
+        
+        function updateFooterContent(footerData = null) {
+            // If no data provided, get from form fields
+            if (!footerData) {
+                footerData = {
+                    companyName: document.getElementById('footerCompanyName').value || 'WhatsApp Sender Pro',
+                    description: document.getElementById('footerDescription').value || 'Professional WhatsApp messaging platform',
+                    copyright: document.getElementById('footerCopyright').value || '© 2024 WhatsApp Sender Pro. All rights reserved.',
+                    supportPhone: document.getElementById('footerSupportPhone').value || '+1 (269) 883-2370',
+                    whatsappLink: document.getElementById('footerWhatsappLink').value || 'https://wa.me/12698832370'
+                };
+            }
+            
+            // Update footer elements
+            const companyNameEl = document.querySelector('footer h5');
+            if (companyNameEl) companyNameEl.textContent = footerData.companyName;
+            
+            const descriptionEl = document.querySelector('footer p.mb-0.text-muted');
+            if (descriptionEl) descriptionEl.textContent = footerData.description;
+            
+            const copyrightEl = document.querySelector('footer .col-12.text-center p');
+            if (copyrightEl) copyrightEl.textContent = footerData.copyright;
+            
+            const phoneEl = document.querySelector('footer a[href^="https://wa.me"]');
+            if (phoneEl) {
+                phoneEl.href = footerData.whatsappLink;
+                phoneEl.textContent = footerData.supportPhone;
+            }
+        }
+        
+        // User Export/Restore Functions
+        async function exportUsers() {
+            try {
+                console.log('Starting export...');
+                const response = await fetch('/api/admin/users/export', {
+                    method: 'GET',
+                    credentials: 'same-origin',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    }
+                });
+                console.log('Response status:', response.status);
+                
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('Response error text:', errorText);
+                    
+                    if (response.status === 403) {
+                        throw new Error('Access denied. Admin privileges required.');
+                    } else if (response.status === 401) {
+                        throw new Error('Authentication required. Please log in again.');
+                    } else {
+                        throw new Error(`HTTP error! status: ${response.status} - ${errorText}`);
+                    }
+                }
+                
+                const result = await response.json();
+                console.log('Export result:', result);
+                
+                if (result.success) {
+                    // Create and download the JSON file
+                    const dataStr = JSON.stringify(result.users, null, 2);
+                    const dataBlob = new Blob([dataStr], {type: 'application/json'});
+                    
+                    const link = document.createElement('a');
+                    link.href = URL.createObjectURL(dataBlob);
+                    link.download = `users_backup_${new Date().toISOString().split('T')[0]}.json`;
+                    
+                    // Trigger download
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    
+                    showAlert(`Successfully exported ${result.users.length} users`, 'success');
+                } else {
+                    console.error('Export failed:', result.error);
+                    showAlert('Error exporting users: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                console.error('Export error:', error);
+                showAlert('Error exporting users: ' + error.message, 'danger');
+            }
+        }
+        
+        function showRestoreModal() {
+            // Reset form
+            document.getElementById('restoreFile').value = '';
+            document.getElementById('restoreAlert').innerHTML = '';
+            document.getElementById('restorePreview').style.display = 'none';
+            
+            // Show modal
+            new bootstrap.Modal(document.getElementById('restoreUsersModal')).show();
+        }
+        
+        // File preview for restore
+        document.addEventListener('DOMContentLoaded', function() {
+            const restoreFileInput = document.getElementById('restoreFile');
+            if (restoreFileInput) {
+                restoreFileInput.addEventListener('change', function() {
+                    const file = this.files[0];
+                    if (file) {
+                        if (file.type !== 'application/json') {
+                            document.getElementById('restoreAlert').innerHTML = `
+                                <div class="alert alert-danger">
+                                    <i class="fas fa-exclamation-circle"></i> Please select a valid JSON file.
+                                </div>
+                            `;
+                            return;
+                        }
+                        
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            try {
+                                const users = JSON.parse(e.target.result);
+                                if (Array.isArray(users)) {
+                                    document.getElementById('restorePreview').style.display = 'block';
+                                    document.getElementById('restorePreviewContent').innerHTML = `
+                                        <div class="alert alert-info">
+                                            <i class="fas fa-info-circle"></i>
+                                            Found <strong>${users.length}</strong> users in the backup file.
+                                            <br><small>Users: ${users.map(u => u.username).slice(0, 5).join(', ')}${users.length > 5 ? '...' : ''}</small>
+                                        </div>
+                                    `;
+                                    document.getElementById('restoreAlert').innerHTML = '';
+                                } else {
+                                    throw new Error('Invalid format');
+                                }
+                            } catch (error) {
+                                document.getElementById('restoreAlert').innerHTML = `
+                                    <div class="alert alert-danger">
+                                        <i class="fas fa-exclamation-circle"></i> Invalid JSON format. Please select a valid backup file.
+                                    </div>
+                                `;
+                                document.getElementById('restorePreview').style.display = 'none';
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                });
+            }
+        });
+        
+        async function restoreUsers() {
+            const fileInput = document.getElementById('restoreFile');
+            const alertContainer = document.getElementById('restoreAlert');
+            
+            if (!fileInput.files[0]) {
+                alertContainer.innerHTML = `
+                    <div class="alert alert-danger">
+                        <i class="fas fa-exclamation-circle"></i> Please select a backup file first.
+                    </div>
+                `;
+                return;
+            }
+            
+            const file = fileInput.files[0];
+            const reader = new FileReader();
+            
+            reader.onload = async function(e) {
+                try {
+                    const users = JSON.parse(e.target.result);
+                    
+                    if (!Array.isArray(users)) {
+                        throw new Error('Invalid file format');
+                    }
+                    
+                    // Send users to server for restoration
+                    const response = await fetch('/api/admin/users/restore', {
+                        method: 'POST',
+                        credentials: 'same-origin',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ users })
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        alertContainer.innerHTML = `
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i> ${result.message}
+                                <br><small>Imported: ${result.imported}, Skipped: ${result.skipped}</small>
+                            </div>
+                        `;
+                        
+                        // Refresh users list and close modal after 2 seconds
+                        setTimeout(() => {
+                            bootstrap.Modal.getInstance(document.getElementById('restoreUsersModal')).hide();
+                            loadUsers();
+                            refreshStats();
+                        }, 2000);
+                    } else {
+                        alertContainer.innerHTML = `
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-circle"></i> ${result.error}
+                            </div>
+                        `;
+                    }
+                } catch (error) {
+                    alertContainer.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle"></i> Error processing file: ${error.message}
+                        </div>
+                    `;
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+    </script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fab fa-whatsapp fa-2x text-success me-3"></i>
+                        <div>
+                            <h5 class="mb-1">WhatsApp Sender Pro</h5>
+                            <p class="mb-0 text-muted">Professional WhatsApp messaging platform</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <span class="text-muted">Support & Contact:</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <i class="fab fa-whatsapp fa-lg text-success me-2"></i>
+                        <a href="https://wa.me/12698832370" target="_blank" class="text-success text-decoration-none fw-bold">
+                            +1 (269) 883-2370
+                        </a>
+                    </div>
+                    <small class="text-muted">Click to open WhatsApp chat</small>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0 text-muted">
+                        &copy; 2024 WhatsApp Sender Pro. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Add User Modal -->
+    <div class="modal fade" id="addUserModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-user-plus"></i> Add New User
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="addUserAlert"></div>
+                    <form id="addUserForm">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newUsername" class="form-label">
+                                    <i class="fas fa-user"></i> Username *
+                                </label>
+                                <input type="text" class="form-control" id="newUsername" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newEmail" class="form-label">
+                                    <i class="fas fa-envelope"></i> Email *
+                                </label>
+                                <input type="email" class="form-control" id="newEmail" required>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newFullName" class="form-label">
+                                <i class="fas fa-id-card"></i> Full Name
+                            </label>
+                            <input type="text" class="form-control" id="newFullName">
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPhone" class="form-label">
+                                <i class="fas fa-phone"></i> Phone Number
+                            </label>
+                            <input type="tel" class="form-control" id="newPhone">
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="newRole" class="form-label">
+                                    <i class="fas fa-user-tag"></i> Role *
+                                </label>
+                                <select class="form-select" id="newRole" required>
+                                    <option value="user">User</option>
+                                    <option value="admin">Admin</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="newExpiryDays" class="form-label">
+                                    <i class="fas fa-calendar-alt"></i> Expiry (Days)
+                                </label>
+                                <input type="number" class="form-control" id="newExpiryDays" min="1" max="365" value="30">
+                                <small class="text-muted">Leave empty for no expiry</small>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPassword" class="form-label">
+                                <i class="fas fa-lock"></i> Password *
+                            </label>
+                            <input type="password" class="form-control" id="newPassword" required minlength="6">
+                            <small class="text-muted">Minimum 6 characters</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="createUser()">
+                        <i class="fas fa-user-plus"></i> Create User
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div class="modal fade" id="changePasswordModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-key"></i> Change Password
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="changePasswordAlert"></div>
+                    <form id="changePasswordForm">
+                        <div class="mb-3">
+                            <label for="currentPassword" class="form-label">
+                                <i class="fas fa-lock"></i> Current Password *
+                            </label>
+                            <input type="password" class="form-control" id="currentPassword" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="newPasswordChange" class="form-label">
+                                <i class="fas fa-key"></i> New Password *
+                            </label>
+                            <input type="password" class="form-control" id="newPasswordChange" required minlength="6">
+                            <small class="text-muted">Minimum 6 characters</small>
+                        </div>
+                        <div class="mb-3">
+                            <label for="confirmPassword" class="form-label">
+                                <i class="fas fa-check-circle"></i> Confirm New Password *
+                            </label>
+                            <input type="password" class="form-control" id="confirmPassword" required>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="changePassword()">
+                        <i class="fas fa-key"></i> Change Password
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Restore Users Modal -->
+    <div class="modal fade" id="restoreUsersModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-upload"></i> Restore Users
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="restoreAlert"></div>
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <strong>Warning:</strong> Restoring users will add new users to the system. Existing users with the same username or email will be skipped.
+                    </div>
+                    <div class="mb-3">
+                        <label for="restoreFile" class="form-label">
+                            <i class="fas fa-file-import"></i> Select Users Backup File (JSON)
+                        </label>
+                        <input type="file" class="form-control" id="restoreFile" accept=".json">
+                        <div class="form-text">
+                            Select a JSON file previously exported from this system
+                        </div>
+                    </div>
+                    <div id="restorePreview" style="display: none;">
+                        <h6><i class="fas fa-eye"></i> Preview:</h6>
+                        <div id="restorePreviewContent"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-warning" onclick="restoreUsers()">
+                        <i class="fas fa-upload"></i> Restore Users
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

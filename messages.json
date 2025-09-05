@@ -1,0 +1,130 @@
+{
+  "user_1756797003727_k8f4s0": [
+    {
+      "id": "c7730ed6-3561-4e07-bb42-9e24ea03cbf6",
+      "userId": "user_1756797003727_k8f4s0",
+      "campaignId": "45e4bcd2-15c1-4b30-b5be-277e255adbfa",
+      "campaignName": "Campaign 1756799029926",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710"
+      },
+      "content": "gfh",
+      "deviceId": "82721a5d-61b4-433c-8b72-5ae320fba566",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T07:43:54.153Z",
+      "responseTime": null
+    }
+  ],
+  "user_1756835632394_g15h60": [
+    {
+      "id": "a9df29c5-0951-4952-bc8b-3c45430cd57b",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "50e1cdef-0d21-472e-8e55-d87b8e53d132",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:58:52.272Z",
+      "responseTime": null
+    },
+    {
+      "id": "d00b1863-c5c9-4a99-890e-970485e9fa5d",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "4c2000b8-3328-4955-9bac-32f968f8edb6",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:58:56.780Z",
+      "responseTime": null
+    },
+    {
+      "id": "884001c5-6677-4f34-9aa4-1f3acc307399",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "50e1cdef-0d21-472e-8e55-d87b8e53d132",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:59:02.886Z",
+      "responseTime": null
+    },
+    {
+      "id": "13048f7e-e282-4b09-8070-cd27f15cc1c9",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "4c2000b8-3328-4955-9bac-32f968f8edb6",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:59:07.685Z",
+      "responseTime": null
+    },
+    {
+      "id": "d0233076-0e4f-4f79-bc71-10fbdeb60f66",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "50e1cdef-0d21-472e-8e55-d87b8e53d132",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:59:13.326Z",
+      "responseTime": null
+    },
+    {
+      "id": "b6088bb7-153f-4ed9-b855-5c2a27c1e3c7",
+      "userId": "user_1756835632394_g15h60",
+      "campaignId": "95193f70-fa33-4c04-9eeb-7e1a11c784e4",
+      "campaignName": "Campaign 1756835929270",
+      "recipient": {
+        "phoneNumber": "923558218710",
+        "name": "923558218710",
+        "city": "",
+        "order": ""
+      },
+      "content": "lkj",
+      "deviceId": "4c2000b8-3328-4955-9bac-32f968f8edb6",
+      "deviceName": "WhatsApp-Device-1",
+      "status": "sent",
+      "timestamp": "2025-09-02T17:59:19.539Z",
+      "responseTime": null
+    }
+  ]
+}

@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Single Message History</title>
+    <script src="/socket.io/socket.io.js"></script>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input, textarea, select { width: 100%; padding: 8px; box-sizing: border-box; }
+        button { padding: 10px 20px; background-color: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .result { margin-top: 20px; padding: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+    </style>
+</head>
+<body>
+    <h1>Test Single Message History</h1>
+    
+    <form id="testForm">
+        <div class="form-group">
+            <label for="deviceId">Device ID (optional - for testing with existing device):</label>
+            <input type="text" id="deviceId" placeholder="Leave empty to simulate device creation">
+        </div>
+        
+        <div class="form-group">
+            <label for="phoneNumber">Phone Number:</label>
+            <input type="text" id="phoneNumber" value="923558218710" placeholder="Enter phone number">
+        </div>
+        
+        <div class="form-group">
+            <label for="message">Message:</label>
+            <textarea id="message" placeholder="Enter message">Test single message for history</textarea>
+        </div>
+        
+        <div class="form-group">
+            <label for="recipientName">Recipient Name (optional):</label>
+            <input type="text" id="recipientName" placeholder="Enter recipient name">
+        </div>
+        
+        <button type="submit">Send Test Message</button>
+    </form>
+    
+    <div id="result"></div>
+    
+    <script>
+        const socket = io();
+        let userId = localStorage.getItem('whatsapp_user_id');
+        if (!userId) {
+            userId = `user_${Date.now()}_${Math.random().toString(36).substring(2, 8)}`;
+            localStorage.setItem('whatsapp_user_id', userId);
+        }
+        
+        socket.on('connect', () => {
+            console.log('Connected to server');
+            socket.emit('identify-user', { userId: userId });
+        });
+        
+        document.getElementById('testForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('deviceId', document.getElementById('deviceId').value || 'test-device-id');
+            formData.append('phoneNumber', document.getElementById('phoneNumber').value);
+            formData.append('message', document.getElementById('message').value);
+            formData.append('recipientName', document.getElementById('recipientName').value);
+            
+            try {
+                const response = await fetch('/send-message', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                if (result.success) {
+                    resultDiv.innerHTML = `<div class="result success">Message sent successfully! Message ID: ${result.messageId}</div>`;
+                } else {
+                    resultDiv.innerHTML = `<div class="result error">Error: ${result.error}</div>`;
+                }
+                
+                console.log('Result:', result);
+            } catch (error) {
+                const resultDiv = document.getElementById('result');
+                resultDiv.innerHTML = `<div class="result error">Error: ${error.message}</div>`;
+                console.error('Error:', error);
+            }
+        });
+        
+        // Listen for success events
+        socket.on('message-sent', (data) => {
+            console.log('Message sent successfully:', data);
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result success">Real-time confirmation: Message sent successfully!</div>`;
+        });
+        
+        // Listen for error events
+        socket.on('message-error', (data) => {
+            console.log('Message error:', data);
+            const resultDiv = document.getElementById('result');
+            resultDiv.innerHTML = `<div class="result error">Real-time error: ${data.error}</div>`;
+        });
+        
+        console.log('User ID:', userId);
+    </script>
+</body>
+</html>

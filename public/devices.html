@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Device Management - WhatsApp Sender Pro</title>
+    
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <!-- Authentication Check and Page Content -->
+    <div id="main-content" style="display: none;">
+    <!-- Authentication Check Script -->
+    <script>
+        // Check authentication before showing content
+        document.addEventListener('DOMContentLoaded', async function() {
+            try {
+                const response = await fetch('/api/auth/me');
+                const result = await response.json();
+                
+                if (!result.success) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // Authentication successful, show the page
+                document.getElementById('main-content').style.display = 'block';
+                
+                // Update user display name
+                const userDisplayName = document.getElementById('user-display-name');
+                if (userDisplayName) {
+                    userDisplayName.textContent = result.user.fullName || result.user.username;
+                }
+                
+                // Add logout functionality
+                addLogoutButton();
+                
+            } catch (error) {
+                window.location.href = '/login';
+            }
+        });
+        
+        function addLogoutButton() {
+            const headerDiv = document.querySelector('header .d-flex.align-items-center');
+            if (headerDiv) {
+                const logoutBtn = document.createElement('button');
+                logoutBtn.className = 'btn btn-outline-light btn-sm ms-3';
+                logoutBtn.innerHTML = '<i class="fas fa-sign-out-alt me-1"></i>Logout';
+                logoutBtn.onclick = async function() {
+                    try {
+                        await fetch('/api/auth/logout', { method: 'POST' });
+                        window.location.href = '/login';
+                    } catch (error) {
+                        window.location.href = '/login';
+                    }
+                };
+                headerDiv.appendChild(logoutBtn);
+            }
+        }
+    </script>
+    <div class="container-fluid">
+        <!-- Header -->
+        <header class="row bg-primary text-white py-3 mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h1 class="h3 mb-0 me-4">
+                            <i class="fas fa-mobile-alt me-2"></i>
+                            Device Management
+                        </h1>
+                        <nav class="navbar-nav">
+                            <div class="nav nav-pills">
+                                <a class="nav-link text-white border border-white me-2" href="/dashboard">
+                                    <i class="fas fa-home me-1"></i>Dashboard
+                                </a>
+                                <a class="nav-link active bg-white text-primary" href="devices.html">
+                                    <i class="fas fa-mobile-alt me-1"></i>Devices
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="history.html">
+                                    <i class="fas fa-history me-1"></i>History
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="profile.html">
+                                    <i class="fas fa-user me-1"></i>Profile
+                                </a>
+                                <a class="nav-link text-white border border-white ms-2" href="index.html#bulk-message">
+                                    <i class="fas fa-broadcast-tower me-1"></i>Bulk SMS
+                                </a>
+                            </div>
+                        </nav>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <span class="text-white me-3">
+                            <i class="fas fa-user-circle me-2"></i>
+                            <span id="user-display-name">Loading...</span>
+                        </span>
+                        <div class="status-indicator" id="connection-status">
+                            <span class="badge bg-warning">
+                                <i class="fas fa-circle-notch fa-spin me-1"></i>
+                                Connecting...
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="row">
+            <!-- Device Statistics -->
+            <div class="col-12 mb-4">
+                <div class="row">
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-success text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-check-circle fa-3x mb-2"></i>
+                                <h2 class="mb-0" id="ready-devices-count">0</h2>
+                                <p class="mb-0">Ready Devices</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-warning text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-qrcode fa-3x mb-2"></i>
+                                <h2 class="mb-0" id="scanning-devices-count">0</h2>
+                                <p class="mb-0">Scanning QR</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-secondary text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-times-circle fa-3x mb-2"></i>
+                                <h2 class="mb-0" id="disconnected-devices-count">0</h2>
+                                <p class="mb-0">Disconnected</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 col-sm-6 mb-3">
+                        <div class="card bg-info text-white">
+                            <div class="card-body text-center">
+                                <i class="fas fa-mobile-alt fa-3x mb-2"></i>
+                                <h2 class="mb-0" id="total-devices-count">0</h2>
+                                <p class="mb-0">Total Devices</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device Actions -->
+            <div class="col-12 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-plus me-2"></i>
+                            Add New Devices
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row align-items-end">
+                            <div class="col-md-4 mb-3">
+                                <label for="bulk-device-count" class="form-label fw-bold">
+                                    <i class="fas fa-hashtag me-1"></i>
+                                    Number of Devices to Add:
+                                </label>
+                                <select class="form-select" id="bulk-device-count">
+                                    <option value="1">1 Device</option>
+                                    <option value="2">2 Devices</option>
+                                    <option value="3">3 Devices</option>
+                                    <option value="5">5 Devices</option>
+                                    <option value="10">10 Devices</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="device-name-prefix" class="form-label fw-bold">
+                                    <i class="fas fa-tag me-1"></i>
+                                    Device Name Prefix:
+                                </label>
+                                <input type="text" class="form-control" id="device-name-prefix" 
+                                       placeholder="e.g., WhatsApp-Device" value="WhatsApp-Device">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <button class="btn btn-primary btn-lg w-100" id="bulk-add-devices-btn">
+                                    <i class="fas fa-plus-circle me-2"></i>
+                                    Add Devices
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Loading Message -->
+                        <div class="alert alert-info mt-3" id="device-loading-message" style="display: none;">
+                            <div class="d-flex align-items-center">
+                                <div class="spinner-border spinner-border-sm text-info me-3" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <div>
+                                    <i class="fas fa-clock me-2"></i>
+                                    <strong>Please wait...</strong> Device adding
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="alert alert-info mt-3" id="device-add-tip">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Tip:</strong> You can add multiple devices at once and scan their QR codes simultaneously using different WhatsApp accounts.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Active QR Codes Section -->
+            <div class="col-12 mb-4" id="qr-codes-section" style="display: none;">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-warning text-dark">
+                        <h5 class="mb-0">
+                            <i class="fas fa-qrcode me-2"></i>
+                            Active QR Codes - Scan with Different WhatsApp Accounts
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row" id="qr-codes-container">
+                            <!-- QR codes will be inserted here -->
+                        </div>
+                        <div class="alert alert-warning mt-3">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            <strong>Important:</strong> Each QR code must be scanned with a different WhatsApp account. 
+                            Make sure you have multiple phones with different WhatsApp numbers.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Device List -->
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-list me-2"></i>
+                            All Devices
+                        </h5>
+                        <div>
+                            <button class="btn btn-light btn-sm me-2" id="refresh-all-btn">
+                                <i class="fas fa-sync-alt me-1"></i>
+                                Refresh All
+                            </button>
+                            <button class="btn btn-danger btn-sm" id="delete-all-btn">
+                                <i class="fas fa-trash me-1"></i>
+                                Delete All
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div id="devices-list-container">
+                            <div class="text-muted text-center p-5">
+                                <i class="fas fa-mobile-alt fa-4x mb-3"></i>
+                                <h4>No Devices Yet</h4>
+                                <p>Click "Add Devices" above to start adding WhatsApp devices to your account.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End of main-content div -->
+
+    <!-- Device Details Modal -->
+    <div class="modal fade" id="deviceDetailsModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-mobile-alt me-2"></i>
+                        Device Details
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="device-details-content">
+                    <!-- Device details will be inserted here -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-danger" id="delete-device-modal-btn">
+                        <i class="fas fa-trash me-2"></i>Delete Device
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk QR Modal -->
+    <div class="modal fade" id="bulkQRModal" tabindex="-1">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-qrcode me-2"></i>
+                        Scan QR Codes - Use Different WhatsApp Accounts
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Important:</strong> Each QR code must be scanned with a different WhatsApp account. 
+                        Use multiple phones with different phone numbers.
+                    </div>
+                    <div class="row" id="bulk-qr-container">
+                        <!-- Bulk QR codes will be shown here -->
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="toast-header">
+                <i id="toast-icon" class="me-2"></i>
+                <strong class="me-auto" id="toast-title">Notification</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast"></button>
+            </div>
+            <div class="toast-body" id="toast-body">
+                <!-- Toast message will be inserted here -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Socket.io Client -->
+    <script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script src="device-manager.js"></script>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white py-4 mt-5">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-center">
+                        <i class="fab fa-whatsapp fa-2x text-success me-3"></i>
+                        <div>
+                            <h5 class="mb-1">WhatsApp Sender Pro</h5>
+                            <p class="mb-0 text-muted">Professional WhatsApp messaging platform</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <div class="mb-2">
+                        <span class="text-muted">Support & Contact:</span>
+                    </div>
+                    <div class="d-flex align-items-center justify-content-md-end">
+                        <i class="fab fa-whatsapp fa-lg text-success me-2"></i>
+                        <a href="https://wa.me/12698832370" target="_blank" class="text-success text-decoration-none fw-bold">
+                            +1 (269) 883-2370
+                        </a>
+                    </div>
+                    <small class="text-muted">Click to open WhatsApp chat</small>
+                </div>
+            </div>
+            <hr class="my-3">
+            <div class="row">
+                <div class="col-12 text-center">
+                    <p class="mb-0 text-muted">
+                        &copy; 2024 WhatsApp Sender Pro. All rights reserved.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </footer>
+</body>
+</html>
